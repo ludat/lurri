@@ -131,10 +131,54 @@ impl Game {
                 if c != self.turn {
                     return Err("Wrong color")
                 };
-                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
-                self.board[m.from.y][m.from.x] = Some(Square::new(None));
-                self.turn = !self.turn;
-                Ok(())
+                match c {
+                White =>
+                match pt {
+                    King   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Queen  => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Rook   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Bishop => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Knight => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Pawn   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                },
+                Black =>
+                match pt {
+                    King   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Queen  => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Rook   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Bishop => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Knight => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                    Pawn   => {
+                        Err("NOT YET IMPLEMENTED")
+                    },
+                }
+                }
+                // self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
+                // self.board[m.from.y][m.from.x] = Some(Square::new(None));
+                // self.turn = !self.turn;
+                // Ok(())
             },
         }
     }
