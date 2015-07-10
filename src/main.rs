@@ -189,7 +189,7 @@ impl Not for Color {
     }
 }
 #[test]
-fn test_color() {
+fn color_not() {
     assert!(Black == !White);
     assert!(White == !Black);
 }
