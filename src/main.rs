@@ -3,120 +3,146 @@ use std::fmt;
 use std::io;
 use std::ops::Not;
 
-struct Board {
-    board: [[Option<Square>; 12]; 12],
+type Board = [[Option<Square>; 12]; 12];
+
+struct Game {
+    board: Board,
+    turn: Color,
 }
 
-impl Board {
-    fn new() -> Board {
-        Board { board: [
-            [None, None, None, None, None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None, None, None, None, None],
-            [ // 1
-                None, None,
-                Some(Square::white_root()),
-                Some(Square::white_knight()),
-                Some(Square::white_bishop()),
-                Some(Square::white_queen()),
-                Some(Square::white_king()),
-                Some(Square::white_bishop()),
-                Some(Square::white_knight()),
-                Some(Square::white_root()),
-                None, None,
-            ],
-            [ // 2
-                None, None,
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                Some(Square::white_pawn()),
-                None, None,
-            ],
-            [ // 3
-                None, None,
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                None, None,
-            ],
-            [ // 4
-                None, None,
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                None, None,
-            ],
-            [ // 5
-                None, None,
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                None, None,
-            ],
-            [ // 6
-                None, None,
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                Some(Square::empty()),
-                None, None,
-            ],
-            [ // 7
-                None, None,
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                Some(Square::black_pawn()),
-                None, None,
-            ],
-            [ // 8
-                None, None,
-                Some(Square::black_root()),
-                Some(Square::black_knight()),
-                Some(Square::black_bishop()),
-                Some(Square::black_queen()),
-                Some(Square::black_king()),
-                Some(Square::black_bishop()),
-                Some(Square::black_knight()),
-                Some(Square::black_root()),
-                None, None,
-            ],
+impl Game {
+    fn new() -> Game {
+        Game {
+            board: [
+                [None, None, None, None, None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None, None, None, None, None],
+                [ // 1
+                    None, None,
+                    Some(Square::white_root()),
+                    Some(Square::white_knight()),
+                    Some(Square::white_bishop()),
+                    Some(Square::white_queen()),
+                    Some(Square::white_king()),
+                    Some(Square::white_bishop()),
+                    Some(Square::white_knight()),
+                    Some(Square::white_root()),
+                    None, None,
+                ],
+                [ // 2
+                    None, None,
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    Some(Square::white_pawn()),
+                    None, None,
+                ],
+                [ // 3
+                    None, None,
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    None, None,
+                ],
+                [ // 4
+                    None, None,
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    None, None,
+                ],
+                [ // 5
+                    None, None,
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    None, None,
+                ],
+                [ // 6
+                    None, None,
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    Some(Square::empty()),
+                    None, None,
+                ],
+                [ // 7
+                    None, None,
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    Some(Square::black_pawn()),
+                    None, None,
+                ],
+                [ // 8
+                    None, None,
+                    Some(Square::black_root()),
+                    Some(Square::black_knight()),
+                    Some(Square::black_bishop()),
+                    Some(Square::black_queen()),
+                    Some(Square::black_king()),
+                    Some(Square::black_bishop()),
+                    Some(Square::black_knight()),
+                    Some(Square::black_root()),
+                    None, None,
+                ],
 
-            [None, None, None, None, None, None, None, None, None, None, None, None],
-            [None, None, None, None, None, None, None, None, None, None, None, None],
-        ] }
+                [None, None, None, None, None, None, None, None, None, None, None, None],
+                [None, None, None, None, None, None, None, None, None, None, None, None],
+            ],
+            turn: White,
+        }
+    }
+    fn show(&self) {
+        println!("{}", self)
+    }
+    fn makemove(&mut self, m: &Move) -> Result<(), &'static str> {
+        println!("Making move {}...", m);
+        match self.board[m.from.y][m.from.x] {
+            None => Err("Not even a valid square"),
+            Some(Square { piece: None } ) => Err("Empty from square"),
+            Some(Square { piece: Some(Piece { tipo: pt, color: c }) }) => {
+                if c != self.turn {
+                    return Err("Wrong color")
+                };
+                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
+                self.board[m.from.y][m.from.x] = Some(Square::new(None));
+                self.turn = !self.turn;
+                Ok(())
+            },
+        }
     }
 }
 
-impl fmt::Display for Board {
+impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "{} Plays\n", self.turn));
         try!(write!(f, "  +-----------------+\n"));
         for r in (2..10).rev() {
             try!(write!(f, "{} |", r-1));
@@ -131,37 +157,6 @@ impl fmt::Display for Board {
         try!(write!(f, "  +-----------------+\n"));
         try!(write!(f, "    a b c d e f g h  \n"));
         Ok(())
-    }
-}
-
-struct Game {
-    board: Board,
-    turn: Color,
-}
-
-impl Game {
-    fn new() -> Game {
-        Game {
-            board: Board::new(),
-            turn: White,
-        }
-    }
-    fn show(&self) {
-        println!("{}", self)
-    }
-    fn makemove(&mut self, m: &Move) -> Result<(), &'static str> {
-        println!("Making move {}...", m);
-        self.turn = !self.turn;
-        // let f = self.board.board[m.from.y][m.from.x];
-        self.board.board[m.to.y][m.to.x] = self.board.board[m.from.y][m.from.x];
-        self.board.board[m.from.y][m.from.x] = Some(Square::new(None));
-        Ok(())
-    }
-}
-
-impl fmt::Display for Game {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} Plays\n{}", self.turn, self.board)
     }
 }
 
