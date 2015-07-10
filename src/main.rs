@@ -417,7 +417,13 @@ impl fmt::Display for Move {
 }
 
 #[test]
-fn move_from_str() {
+fn move_from_string() {
+    assert!(Move::from_string("a1a1").unwrap() == Move::new(Position::new(2,2), Position::new(2,2), MoveType::Normal));
+    assert!(Move::from_string("z3a4").is_err());
+    assert!(Move::from_string("e9a2").is_err());
+    assert!(Move::from_string("aaaa").is_err());
+    assert!(Move::from_string("aaa").is_err());
+    assert!(Move::from_string("a").is_err());
 }
 
 type X = usize;
@@ -487,6 +493,12 @@ impl fmt::Display for Position {
             }
         )
     }
+}
+
+#[test]
+fn position_from_string() {
+    assert!(Position { x: 2, y: 2 } == Position::from_chars('a', '1').unwrap());
+    assert!(Position::from_chars('7', '1').is_err());
 }
 
 fn main() {
