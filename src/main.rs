@@ -241,7 +241,7 @@ fn piecetype_from_char () {
     assert!(PieceType::from_char('j').is_err());
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 struct Piece {
     tipo: PieceType,
     color: Color,
@@ -276,7 +276,7 @@ impl fmt::Display for Piece {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 struct Square {
     piece: Option<Piece>
 }
@@ -337,7 +337,7 @@ impl fmt::Display for Square {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 enum MoveType {
     Normal,
     LongCastling,
@@ -345,7 +345,7 @@ enum MoveType {
     Promotion (PieceType),
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 struct Move {
     from: Position,
     to: Position,
@@ -417,7 +417,7 @@ fn move_from_str() {
 
 type X = usize;
 type Y = usize;
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 struct Position {
     x: X,
     y: Y,
