@@ -436,28 +436,46 @@ impl Position {
     fn from_chars(x: char, y: char) -> Result<Position, &'static str> {
         Ok(Position {
             x: match x {
-                'a' => 2,
-                'b' => 3,
-                'c' => 4,
-                'd' => 5,
-                'e' => 6,
-                'f' => 7,
-                'g' => 8,
-                'h' => 9,
+                c @ 'a' | c @ 'b' |
+                c @ 'c' | c @ 'd' |
+                c @ 'e' | c @ 'f' |
+                c @ 'g' | c @ 'h'   => Position::ch2x(c),
                  _  => return Err("Bad letter"),
             },
             y: match y {
-                '1' => 2,
-                '2' => 3,
-                '3' => 4,
-                '4' => 5,
-                '5' => 6,
-                '6' => 7,
-                '7' => 8,
-                '8' => 9,
+                c @ '1' | c @ '2' |
+                c @ '3' | c @ '4' |
+                c @ '5' | c @ '6' |
+                c @ '7' | c @ '8'   => Position::ch2y(c),
                  _  => return Err("Bad Number"),
             },
         })
+    }
+    fn ch2y(y: char) -> Y {
+        match y {
+            '1' => 2,
+            '2' => 3,
+            '3' => 4,
+            '4' => 5,
+            '5' => 6,
+            '6' => 7,
+            '7' => 8,
+            '8' => 9,
+             _  => unreachable!(),
+        }
+    }
+    fn ch2x(x: char) -> X {
+        match x {
+            'a' => 2,
+            'b' => 3,
+            'c' => 4,
+            'd' => 5,
+            'e' => 6,
+            'f' => 7,
+            'g' => 8,
+            'h' => 9,
+             _  => unreachable!(),
+        }
     }
     fn up(&self) -> Position {
         Position::new(self.x, self.y + 1)
