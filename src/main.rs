@@ -464,6 +464,18 @@ impl Position {
             },
         })
     }
+    fn up(&self) -> Position {
+        Position::new(self.x, self.y + 1)
+    }
+    fn down(&self) -> Position {
+        Position::new(self.x, self.y - 1)
+    }
+    fn right(&self) -> Position {
+        Position::new(self.x + 1, self.y)
+    }
+    fn left(&self) -> Position {
+        Position::new(self.x - 1, self.y)
+    }
 }
 
 impl fmt::Display for Position {
@@ -499,6 +511,15 @@ impl fmt::Display for Position {
 fn position_from_string() {
     assert!(Position { x: 2, y: 2 } == Position::from_chars('a', '1').unwrap());
     assert!(Position::from_chars('7', '1').is_err());
+}
+
+#[test]
+fn move_position() {
+    assert!(Position::from_chars('e','2').unwrap().up().down().left().right() == Position::from_chars('e','2').unwrap());
+    assert!(Position::from_chars('e','2').unwrap().up() == Position::from_chars('e','3').unwrap());
+    assert!(Position::from_chars('e','2').unwrap().down() == Position::from_chars('e','1').unwrap());
+    assert!(Position::from_chars('e','2').unwrap().left() == Position::from_chars('d','2').unwrap());
+    assert!(Position::from_chars('e','2').unwrap().right() == Position::from_chars('f','2').unwrap());
 }
 
 fn main() {
