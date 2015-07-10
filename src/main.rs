@@ -171,6 +171,7 @@ enum Color {
     White,
     Black,
 }
+
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
@@ -179,6 +180,7 @@ impl fmt::Display for Color {
         })
     }
 }
+
 impl Not for Color {
     type Output = Color;
     fn not(self) -> Color {
@@ -188,6 +190,7 @@ impl Not for Color {
         }
     }
 }
+
 #[test]
 fn color_not() {
     assert!(Black == !White);
@@ -204,6 +207,7 @@ enum PieceType {
     Knight,
     Pawn,
 }
+
 impl PieceType {
     fn from_char(c: char) -> Result<PieceType, &'static str> {
         match c {
@@ -217,6 +221,7 @@ impl PieceType {
         }
     }
 }
+
 impl fmt::Display for PieceType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
