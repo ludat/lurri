@@ -18,14 +18,14 @@ impl Game {
                 [None, None, None, None, None, None, None, None, None, None, None, None],
                 [ // 1
                     None, None,
-                    Some(Square::white_root()),
+                    Some(Square::white_rook()),
                     Some(Square::white_knight()),
                     Some(Square::white_bishop()),
                     Some(Square::white_queen()),
                     Some(Square::white_king()),
                     Some(Square::white_bishop()),
                     Some(Square::white_knight()),
-                    Some(Square::white_root()),
+                    Some(Square::white_rook()),
                     None, None,
                 ],
                 [ // 2
@@ -102,14 +102,14 @@ impl Game {
                 ],
                 [ // 8
                     None, None,
-                    Some(Square::black_root()),
+                    Some(Square::black_rook()),
                     Some(Square::black_knight()),
                     Some(Square::black_bishop()),
                     Some(Square::black_queen()),
                     Some(Square::black_king()),
                     Some(Square::black_bishop()),
                     Some(Square::black_knight()),
-                    Some(Square::black_root()),
+                    Some(Square::black_rook()),
                     None, None,
                 ],
 
@@ -330,7 +330,7 @@ impl Square {
         Square { piece: p }
     }
 
-    fn black_root () -> Square {
+    fn black_rook () -> Square {
         Square { piece: Some(Piece { tipo: Rook, color: Black }) }
     }
     fn black_knight () -> Square {
@@ -349,7 +349,7 @@ impl Square {
         Square { piece: Some(Piece { tipo: Pawn, color: Black }) }
     }
 
-    fn white_root () -> Square {
+    fn white_rook () -> Square {
         Square { piece: Some(Piece { tipo: Rook, color: White }) }
     }
     fn white_knight () -> Square {
