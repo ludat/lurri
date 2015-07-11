@@ -330,6 +330,19 @@ impl Square {
         Square { piece: p }
     }
 
+    fn is_white(&self) -> bool {
+        match *self {
+            Square { piece: Some(Piece { tipo: _, color: White }) } => true,
+            _ => false,
+        }
+    }
+    fn is_black(&self) -> bool {
+        match *self {
+            Square { piece: Some(Piece { tipo: _, color: Black }) } => true,
+            _ => false,
+        }
+    }
+
     fn black_rook () -> Square {
         Square { piece: Some(Piece { tipo: Rook, color: Black }) }
     }
@@ -379,6 +392,26 @@ impl fmt::Display for Square {
             Square { piece: None } => format!("."),
         })
     }
+}
+
+#[test]
+fn square_color() {
+    assert!(Square::white_king()   .is_white());
+    assert!(Square::white_queen()  .is_white());
+    assert!(Square::white_rook()   .is_white());
+    assert!(Square::white_bishop() .is_white());
+    assert!(Square::white_knight() .is_white());
+    assert!(Square::white_pawn()   .is_white());
+
+    assert!(Square::black_king()   .is_black());
+    assert!(Square::black_queen()  .is_black());
+    assert!(Square::black_rook()   .is_black());
+    assert!(Square::black_bishop() .is_black());
+    assert!(Square::black_knight() .is_black());
+    assert!(Square::black_pawn()   .is_black());
+
+    assert!(!Square::empty().is_white());
+    assert!(!Square::empty().is_black());
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
