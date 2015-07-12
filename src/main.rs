@@ -122,63 +122,101 @@ impl Game {
     fn show(&self) {
         println!("{}", self)
     }
+    fn get_square(&self, pos: Position) -> Square {
+        self.board[pos.y][pos.x].unwrap()
+    }
     fn makemove(&mut self, m: &Move) -> Result<(), &'static str> {
+
+        // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
         println!("Making move {}...", m);
-        match self.board[m.from.y][m.from.x] {
-            None => Err("Not even a valid square"),
-            Some(Square { piece: None } ) => Err("Empty from square"),
-            Some(Square { piece: Some(Piece { tipo: pt, color: c }) }) => {
-                if c != self.turn {
+        match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
+            (None, _)                       => Err("Not even a valid square"),
+            (_, None)                       => Err("Not even a valid square"),
+            (Some(Square {content: None}), _) => Err("Empty from square"),
+            (Some(from_square), Some(to_square)) => {
+                if from_square.content.unwrap().color != self.turn {
                     return Err("Wrong color")
                 };
-                match c {
-                White =>
-                match pt {
-                    King   => {
-                        Err("NOT YET IMPLEMENTED")
+                match self.turn {
+                    White => match from_square.content.unwrap().tipo {
+                        King   => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Queen  => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Rook   => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Bishop => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Knight => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Pawn   => {
+                            if (
+                                    m.from.y==Position::ch2y('2') &&        // From initial pawn position
+                                    m.from.up().up()==m.to &&               // `to` and `from` columns are the same
+                                    to_square.has_none() &&                 // Final square is empty
+                                    self.get_square(m.from.up()).has_none() // Middle way square is empty
+                                ) || (
+                                    m.from.up()==m.to &&        // `from` is one up from `to`
+                                    to_square.has_none() // `to` square is empty
+                                ) || (
+                                    (m.from.up().left()==m.to || m.from.up().right()==m.to) &&
+                                    to_square.has_black() // Check if it's black
+                                ) {
+                                // TODO Create a final make move that is very very basic
+                                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
+                                self.board[m.from.y][m.from.x] = Some(Square::empty());
+                                self.turn = !self.turn;
+                                Ok(())
+                            } else {
+                                Err("Bad pawn movement")
+                            }
+                        },
                     },
-                    Queen  => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Rook   => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Bishop => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Knight => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Pawn   => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                },
-                Black =>
-                match pt {
-                    King   => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Queen  => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Rook   => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Bishop => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Knight => {
-                        Err("NOT YET IMPLEMENTED")
-                    },
-                    Pawn   => {
-                        Err("NOT YET IMPLEMENTED")
+                    Black => match from_square.content.unwrap().tipo {
+                        King   => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Queen  => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Rook   => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Bishop => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Knight => {
+                            Err("NOT YET IMPLEMENTED")
+                        },
+                        Pawn   => {
+                            if (
+                                    m.from.y==Position::ch2y('7') &&        // From initial pawn position
+                                    m.from.down().down()==m.to &&               // `to` and `from` columns are the same
+                                    to_square.has_none() &&                 // Final square is empty
+                                    self.get_square(m.from.down()).has_none() // Middle way square is empty
+                                ) || (
+                                    m.from.down()==m.to &&        // `from` is one down from `to`
+                                    to_square.has_none() // `to` square is empty
+                                ) || (
+                                    (m.from.down().left()==m.to || m.from.down().right()==m.to) &&
+                                    to_square.has_white() // Check if it's black
+                                ) {
+                                // TODO Create a final make move that is very very basic
+                                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
+                                self.board[m.from.y][m.from.x] = Some(Square::empty());
+                                self.turn = !self.turn;
+                                Ok(())
+                            } else {
+                                Err("Bad pawn movement")
+                            }
+                        },
                     },
                 }
-                }
-                // self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
-                // self.board[m.from.y][m.from.x] = Some(Square::new(None));
-                // self.turn = !self.turn;
-                // Ok(())
             },
         }
     }
@@ -322,96 +360,112 @@ impl fmt::Display for Piece {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 struct Square {
-    piece: Option<Piece>
+    content: Option<Piece>
 }
 
 impl Square {
     fn new(p: Option<Piece>) -> Square{
-        Square { piece: p }
+        Square { content: p }
     }
 
-    fn is_white(&self) -> bool {
+    fn has_white(&self) -> bool {
         match *self {
-            Square { piece: Some(Piece { tipo: _, color: White }) } => true,
+            Square { content: Some(Piece { tipo: _, color: White }) } => true,
             _ => false,
         }
     }
-    fn is_black(&self) -> bool {
+    fn has_black(&self) -> bool {
         match *self {
-            Square { piece: Some(Piece { tipo: _, color: Black }) } => true,
+            Square { content: Some(Piece { tipo: _, color: Black }) } => true,
+            _ => false,
+        }
+    }
+    fn has_none(&self) -> bool {
+        match *self {
+            Square { content: None } => true,
+            _ => false,
+        }
+    }
+    fn has_some(&self) -> bool {
+        match *self {
+            Square { content: Some(_) } => true,
             _ => false,
         }
     }
 
-    fn black_rook () -> Square {
-        Square { piece: Some(Piece { tipo: Rook, color: Black }) }
+    fn black_rook() -> Square {
+        Square { content: Some(Piece { tipo: Rook, color: Black }) }
     }
-    fn black_knight () -> Square {
-        Square { piece: Some(Piece { tipo: Knight, color: Black }) }
+    fn black_knight() -> Square {
+        Square { content: Some(Piece { tipo: Knight, color: Black }) }
     }
-    fn black_bishop () -> Square {
-        Square { piece: Some(Piece { tipo: Bishop, color: Black }) }
+    fn black_bishop() -> Square {
+        Square { content: Some(Piece { tipo: Bishop, color: Black }) }
     }
-    fn black_queen () -> Square {
-        Square { piece: Some(Piece { tipo: Queen, color: Black }) }
+    fn black_queen() -> Square {
+        Square { content: Some(Piece { tipo: Queen, color: Black }) }
     }
-    fn black_king () -> Square {
-        Square { piece: Some(Piece { tipo: King, color: Black }) }
+    fn black_king() -> Square {
+        Square { content: Some(Piece { tipo: King, color: Black }) }
     }
-    fn black_pawn () -> Square {
-        Square { piece: Some(Piece { tipo: Pawn, color: Black }) }
+    fn black_pawn() -> Square {
+        Square { content: Some(Piece { tipo: Pawn, color: Black }) }
     }
 
-    fn white_rook () -> Square {
-        Square { piece: Some(Piece { tipo: Rook, color: White }) }
+    fn white_rook() -> Square {
+        Square { content: Some(Piece { tipo: Rook, color: White }) }
     }
-    fn white_knight () -> Square {
-        Square { piece: Some(Piece { tipo: Knight, color: White }) }
+    fn white_knight() -> Square {
+        Square { content: Some(Piece { tipo: Knight, color: White }) }
     }
-    fn white_bishop () -> Square {
-        Square { piece: Some(Piece { tipo: Bishop, color: White }) }
+    fn white_bishop() -> Square {
+        Square { content: Some(Piece { tipo: Bishop, color: White }) }
     }
-    fn white_queen () -> Square {
-        Square { piece: Some(Piece { tipo: Queen, color: White }) }
+    fn white_queen() -> Square {
+        Square { content: Some(Piece { tipo: Queen, color: White }) }
     }
-    fn white_king () -> Square {
-        Square { piece: Some(Piece { tipo: King, color: White }) }
+    fn white_king() -> Square {
+        Square { content: Some(Piece { tipo: King, color: White }) }
     }
-    fn white_pawn () -> Square {
-        Square { piece: Some(Piece { tipo: Pawn, color: White }) }
+    fn white_pawn() -> Square {
+        Square { content: Some(Piece { tipo: Pawn, color: White }) }
     }
-    fn empty () -> Square {
-        Square { piece: None }
+    fn empty() -> Square {
+        Square { content: None }
     }
 }
 
 impl fmt::Display for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
-            Square { piece: Some(ref p) } => format!("{}", p),
-            Square { piece: None } => format!("."),
+            Square { content: Some(ref p) } => format!("{}", p),
+            Square { content: None } => format!("."),
         })
     }
 }
 
 #[test]
-fn square_color() {
-    assert!(Square::white_king()   .is_white());
-    assert!(Square::white_queen()  .is_white());
-    assert!(Square::white_rook()   .is_white());
-    assert!(Square::white_bishop() .is_white());
-    assert!(Square::white_knight() .is_white());
-    assert!(Square::white_pawn()   .is_white());
+fn helper_square_functions() {
+    assert!(Square::white_king()   .has_white());
+    assert!(Square::white_queen()  .has_white());
+    assert!(Square::white_rook()   .has_white());
+    assert!(Square::white_bishop() .has_white());
+    assert!(Square::white_knight() .has_white());
+    assert!(Square::white_pawn()   .has_white());
 
-    assert!(Square::black_king()   .is_black());
-    assert!(Square::black_queen()  .is_black());
-    assert!(Square::black_rook()   .is_black());
-    assert!(Square::black_bishop() .is_black());
-    assert!(Square::black_knight() .is_black());
-    assert!(Square::black_pawn()   .is_black());
+    assert!(Square::black_king()   .has_black());
+    assert!(Square::black_queen()  .has_black());
+    assert!(Square::black_rook()   .has_black());
+    assert!(Square::black_bishop() .has_black());
+    assert!(Square::black_knight() .has_black());
+    assert!(Square::black_pawn()   .has_black());
 
-    assert!(!Square::empty().is_white());
-    assert!(!Square::empty().is_black());
+    assert!(!Square::empty().has_white());
+    assert!(!Square::empty().has_black());
+
+    assert!(Square::empty().has_none());
+    assert!(!Square::black_pawn().has_none());
+    assert!(!Square::white_pawn().has_none());
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
