@@ -582,17 +582,11 @@ impl Position {
     fn from_chars(x: char, y: char) -> Result<Position, &'static str> {
         Ok(Position {
             x: match x {
-                c @ 'a' | c @ 'b' |
-                c @ 'c' | c @ 'd' |
-                c @ 'e' | c @ 'f' |
-                c @ 'g' | c @ 'h'   => Position::ch2x(c),
+                c @ 'a' ... 'h' => Position::ch2x(c),
                  _  => return Err("Bad letter"),
             },
             y: match y {
-                c @ '1' | c @ '2' |
-                c @ '3' | c @ '4' |
-                c @ '5' | c @ '6' |
-                c @ '7' | c @ '8'   => Position::ch2y(c),
+                c @ '1' ... '8' => Position::ch2y(c),
                  _  => return Err("Bad Number"),
             },
         })
