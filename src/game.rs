@@ -3,13 +3,13 @@ use std::ops::Not;
 
 type Board = [[Option<Square>; 12]; 12];
 
-struct Game {
+pub struct Game {
     board: Board,
     turn: Color,
 }
 
 impl Game {
-    fn new() -> Game {
+    pub fn new() -> Game {
         Game {
             board: [
                 [None, None, None, None, None, None, None, None, None, None, None, None],
@@ -117,7 +117,7 @@ impl Game {
             turn: White,
         }
     }
-    fn show(&self) {
+    pub fn show(&self) {
         println!("{}", self)
     }
     fn get_raw_square(&self, pos: Position) -> Option<Square> {
@@ -145,7 +145,7 @@ impl Game {
             }
         };
     }
-    fn make_move(&mut self, m: &Move) -> Result<(), &'static str> {
+    pub fn make_move(&mut self, m: &Move) -> Result<(), &'static str> {
         match m.tipo {
             MoveType::Normal => self.make_normal_move(m),
             MoveType::Promotion (pt) => {
@@ -844,7 +844,7 @@ enum MoveType {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Move {
+pub struct Move {
     from: Position,
     to: Position,
     tipo: MoveType,
@@ -858,7 +858,7 @@ impl Move {
             tipo: movetype,
         }
     }
-    fn from_string(s: &str) -> Result<Move, &'static str> {
+    pub fn from_string(s: &str) -> Result<Move, &'static str> {
         if s == "O-O" {
             Ok(Move {
                 from: Position::new(0,0),
