@@ -122,8 +122,14 @@ impl Game {
     fn show(&self) {
         println!("{}", self)
     }
+    fn get_raw_square(&self, pos: Position) -> Option<Square> {
+        self.board[pos.y][pos.x]
+    }
     fn get_square(&self, pos: Position) -> Square {
         self.board[pos.y][pos.x].unwrap()
+    }
+    fn is_square(&self, pos: Position) -> bool {
+        self.board[pos.y][pos.x].is_some()
     }
     fn makemove(&mut self, m: &Move) -> Result<(), &'static str> {
 
