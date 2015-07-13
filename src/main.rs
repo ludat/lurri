@@ -128,10 +128,25 @@ impl Game {
     fn get_square(&self, pos: Position) -> Square {
         self.board[pos.y][pos.x].unwrap()
     }
+    fn set_square(&mut self, pos: Position, piece: Option<Piece>) -> Result<(), &'static str> {
+        Ok(self.board[pos.y][pos.x] = Some(Square::new(piece)))
+    }
     fn is_square(&self, pos: Position) -> bool {
         self.board[pos.y][pos.x].is_some()
     }
-    fn makemove(&mut self, m: &Move) -> Result<(), &'static str> {
+    fn get_to_by<F>(&self, mov: &Move, f: F) -> bool where F: Fn(&Position) -> Position {
+        let mut p: Position = mov.from;
+        loop {
+            p = f(&p);
+            if p == mov.to {
+                return true
+            };
+            match self.get_raw_square(p) {
+                Some(Square { content: None }) => { println!("{} containts '{}'", p, self.get_square(p)); continue },
+                _ => return false,
+            }
+        };
+    }
 
         // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
         println!("Making move {}...", m);
@@ -218,10 +233,14 @@ impl Game {
             },
         }
     }
-    fn raw_makemove(&mut self, m: &Move) -> Result<(), &'static str> {
+    fn raw_make_move(&mut self, m: &Move) -> Result<(), &'static str> {
+        try!(self.raw_move(m));
+        self.turn = !self.turn;
+        Ok(())
+    }
+    fn raw_move(&mut self, m: &Move) -> Result<(), &'static str> {
         self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
         self.board[m.from.y][m.from.x] = Some(Square::empty());
-        // self.turn = !self.turn;
         Ok(())
     }
 }
