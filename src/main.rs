@@ -486,13 +486,13 @@ impl fmt::Display for Game {
 
 #[test]
 fn test_helper_functions() {
-    let mut board = Game::new();
-    let pos = Position::from_chars('e','2').unwrap();
-    assert!(!board.is_square(Position::new(0,0)));
-    assert!(board.is_square(pos));
-    assert!(board.get_square(pos) == Square::white_pawn());
-    assert!(board.makemove(&Move::from_string("e2e4").unwrap()).is_ok());
-    assert!(board.makemove(&Move::from_string("e2d4").unwrap()).is_err());
+    let mut game = Game::new();
+    let pos = Position::safe_from_chars('e','2');
+    assert!(!game.is_square(Position::new(0,0)));
+    assert!(game.is_square(pos));
+    assert!(game.get_square(pos) == Square::white_pawn());
+    assert!(game.make_move(&Move::safe_from_string("e2e4")).is_ok());
+    assert!(game.make_move(&Move::safe_from_string("e2d4")).is_err());
 }
 
 use Color::{White, Black};
@@ -567,12 +567,12 @@ impl fmt::Display for PieceType {
 
 #[test]
 fn piecetype_from_char () {
-    assert!(Rook == PieceType::from_char('r').unwrap());
-    assert!(Knight == PieceType::from_char('n').unwrap());
-    assert!(Bishop == PieceType::from_char('b').unwrap());
-    assert!(Queen == PieceType::from_char('q').unwrap());
-    assert!(King == PieceType::from_char('k').unwrap());
-    assert!(Pawn == PieceType::from_char('p').unwrap());
+    assert!(Rook == PieceType::safe_from_char('r'));
+    assert!(Knight == PieceType::safe_from_char('n'));
+    assert!(Bishop == PieceType::safe_from_char('b'));
+    assert!(Queen == PieceType::safe_from_char('q'));
+    assert!(King == PieceType::safe_from_char('k'));
+    assert!(Pawn == PieceType::safe_from_char('p'));
     assert!(PieceType::from_char('j').is_err());
 }
 
@@ -800,7 +800,7 @@ impl fmt::Display for Move {
 
 #[test]
 fn move_from_string() {
-    assert!(Move::from_string("a1a1").unwrap() == Move::new(Position::new(2,2), Position::new(2,2), MoveType::Normal));
+    assert!(Move::safe_from_string("a1a1") == Move::new(Position::new(2,2), Position::new(2,2), MoveType::Normal));
     assert!(Move::from_string("z3a4").is_err());
     assert!(Move::from_string("e9a2").is_err());
     assert!(Move::from_string("aaaa").is_err());
@@ -906,17 +906,17 @@ impl fmt::Display for Position {
 
 #[test]
 fn position_from_string() {
-    assert!(Position { x: 2, y: 2 } == Position::from_chars('a', '1').unwrap());
+    assert!(Position { x: 2, y: 2 } == Position::safe_from_chars('a', '1'));
     assert!(Position::from_chars('7', '1').is_err());
 }
 
 #[test]
 fn move_position() {
-    assert!(Position::from_chars('e','2').unwrap().up().down().left().right() == Position::from_chars('e','2').unwrap());
-    assert!(Position::from_chars('e','2').unwrap().up() == Position::from_chars('e','3').unwrap());
-    assert!(Position::from_chars('e','2').unwrap().down() == Position::from_chars('e','1').unwrap());
-    assert!(Position::from_chars('e','2').unwrap().left() == Position::from_chars('d','2').unwrap());
-    assert!(Position::from_chars('e','2').unwrap().right() == Position::from_chars('f','2').unwrap());
+    assert!(Position::safe_from_chars('e','2').up().down().left().right() == Position::safe_from_chars('e','2'));
+    assert!(Position::safe_from_chars('e','2').up() == Position::safe_from_chars('e','3'));
+    assert!(Position::safe_from_chars('e','2').down() == Position::safe_from_chars('e','1'));
+    assert!(Position::safe_from_chars('e','2').left() == Position::safe_from_chars('d','2'));
+    assert!(Position::safe_from_chars('e','2').right() == Position::safe_from_chars('f','2'));
 }
 
 fn main() {
