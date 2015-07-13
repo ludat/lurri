@@ -937,7 +937,7 @@ fn main() {
         "quit" => { println!("Bye"); break },
         _ => match Move::from_string(&line) {
             Ok(ref mov) => {
-                match game.makemove(&mov) {
+                match game.make_move(&mov) {
                     Ok(()) => { println!("Move made"); game.show() },
                     Err(e) => println!("Couldn't make move, {}", e),
                 }
