@@ -544,6 +544,9 @@ impl Move {
             Err("Not a valid string")
         }
     }
+    fn safe_from_string(s: &str) -> Move {
+        Move::from_string(s).unwrap()
+    }
 }
 
 impl fmt::Display for Move {
@@ -590,6 +593,9 @@ impl Position {
                  _  => return Err("Bad Number"),
             },
         })
+    }
+    fn safe_from_chars(x: char, y: char) -> Position {
+        Position::from_chars(x,y).unwrap()
     }
     fn ch2y(y: char) -> Y {
         match y {
