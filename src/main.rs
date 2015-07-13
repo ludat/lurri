@@ -173,11 +173,7 @@ impl Game {
                                     (m.from.up().left()==m.to || m.from.up().right()==m.to) &&
                                     to_square.has_black() // Check if it's black
                                 ) {
-                                // TODO Create a final make move that is very very basic
-                                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
-                                self.board[m.from.y][m.from.x] = Some(Square::empty());
-                                self.turn = !self.turn;
-                                Ok(())
+                                self.raw_makemove(m)
                             } else {
                                 Err("Bad pawn movement")
                             }
@@ -212,11 +208,7 @@ impl Game {
                                     (m.from.down().left()==m.to || m.from.down().right()==m.to) &&
                                     to_square.has_white() // Check if it's black
                                 ) {
-                                // TODO Create a final make move that is very very basic
-                                self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
-                                self.board[m.from.y][m.from.x] = Some(Square::empty());
-                                self.turn = !self.turn;
-                                Ok(())
+                                self.raw_makemove(m)
                             } else {
                                 Err("Bad pawn movement")
                             }
@@ -225,6 +217,12 @@ impl Game {
                 }
             },
         }
+    }
+    fn raw_makemove(&mut self, m: &Move) -> Result<(), &'static str> {
+        self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
+        self.board[m.from.y][m.from.x] = Some(Square::empty());
+        // self.turn = !self.turn;
+        Ok(())
     }
 }
 
