@@ -606,7 +606,7 @@ fn test_game_1() {
     assert!(game.make_move(&Move::safe_from_string("h8d8")).is_ok()); game.show();
 }
 
-use Color::{White, Black};
+use self::Color::{White, Black};
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum Color {
     White,
@@ -638,7 +638,7 @@ fn color_not() {
     assert!(White == !Black);
 }
 
-use PieceType::{King, Queen, Rook, Bishop, Knight, Pawn};
+use self::PieceType::{King, Queen, Rook, Bishop, Knight, Pawn};
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum PieceType {
     King,

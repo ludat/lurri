@@ -1,5 +1,6 @@
 use std::io;
 mod game;
+use game::{Game, Move};
 
 fn main() {
     println!("This is my adorable chess engine written in awesome Rust");
