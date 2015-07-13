@@ -248,6 +248,17 @@ impl fmt::Display for Game {
     }
 }
 
+#[test]
+fn test_helper_functions() {
+    let mut board = Game::new();
+    let pos = Position::from_chars('e','2').unwrap();
+    assert!(!board.is_square(Position::new(0,0)));
+    assert!(board.is_square(pos));
+    assert!(board.get_square(pos) == Square::white_pawn());
+    assert!(board.makemove(&Move::from_string("e2e4").unwrap()).is_ok());
+    assert!(board.makemove(&Move::from_string("e2d4").unwrap()).is_err());
+}
+
 use Color::{White, Black};
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum Color {
