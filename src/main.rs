@@ -933,6 +933,7 @@ fn main() {
         match line.as_ref() {
         "new"  => game = Game::new(),
         "show" => game.show(),
+        "" => game.show(),
         "quit" => { println!("Bye"); break },
         _ => match Move::from_string(&line) {
             Ok(ref mov) => {
