@@ -147,7 +147,88 @@ impl Game {
             }
         };
     }
+    fn make_move(&mut self, m: &Move) -> Result<(), &'static str> {
+        match m.tipo {
+            MoveType::Normal => self.make_normal_move(m),
+            MoveType::Promotion (pt) => {
+                let col = self.turn;
+                try!(self.make_normal_move(m));
+                try!(self.set_square(m.to, Some(Piece::new(pt, col))));
+                Ok(())
+            },
+            MoveType::LongCastling => {
+                match self.turn {
+                    White => {
+                        let king_mov = Move::new(Position::safe_from_chars('e', '1'),
+                                Position::safe_from_chars('c', '1'), MoveType::Normal);
+                        let rook_mov = Move::new(Position::safe_from_chars('a', '1'),
+                                Position::safe_from_chars('d', '1'), MoveType::Normal);
 
+                        if self.get_square(rook_mov.from) == Square::white_rook() &&
+                                self.get_square(king_mov.from) == Square::white_king() &&
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
+                            try!(self.raw_move(&rook_mov));
+                            try!(self.raw_make_move(&king_mov));
+                            Ok(())
+                        } else {
+                            Err("Bad long casting")
+                        }
+                    },
+                    Black => {
+                        let king_mov = Move::new(Position::safe_from_chars('e', '8'),
+                                Position::safe_from_chars('c', '8'), MoveType::Normal);
+                        let rook_mov = Move::new(Position::safe_from_chars('a', '8'),
+                                Position::safe_from_chars('d', '8'), MoveType::Normal);
+
+                        if self.get_square(rook_mov.from) == Square::white_rook() &&
+                                self.get_square(king_mov.from) == Square::white_king() &&
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
+                            try!(self.raw_move(&rook_mov));
+                            try!(self.raw_make_move(&king_mov));
+                            Ok(())
+                        } else {
+                            Err("Bad long casting")
+                        }
+                    },
+                }
+            },
+            MoveType::ShortCastling => match self.turn {
+                White => {
+                    let king_mov = Move::new(Position::safe_from_chars('e', '1'),
+                            Position::safe_from_chars('g', '1'), MoveType::Normal);
+                    let rook_mov = Move::new(Position::safe_from_chars('h', '1'),
+                            Position::safe_from_chars('f', '1'), MoveType::Normal);
+
+                    if self.get_square(rook_mov.from) == Square::white_rook() &&
+                            self.get_square(king_mov.from) == Square::white_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
+                        try!(self.raw_move(&rook_mov));
+                        try!(self.raw_make_move(&king_mov));
+                        Ok(())
+                    } else {
+                        Err("Bad short casting")
+                    }
+                },
+                Black => {
+                    let king_mov = Move::new(Position::safe_from_chars('e', '8'),
+                            Position::safe_from_chars('g', '8'), MoveType::Normal);
+                    let rook_mov = Move::new(Position::safe_from_chars('h', '8'),
+                            Position::safe_from_chars('f', '8'), MoveType::Normal);
+
+                    if self.get_square(rook_mov.from) == Square::black_rook() &&
+                            self.get_square(king_mov.from) == Square::black_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
+                        try!(self.raw_move(&rook_mov));
+                        try!(self.raw_make_move(&king_mov));
+                        Ok(())
+                    } else {
+                        Err("Bad short casting")
+                    }
+                },
+            },
+        }
+    }
+    fn make_normal_move(&mut self, m: &Move) -> Result<(), &'static str> {
         // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
         println!("Making move {}...", m);
         match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
@@ -161,34 +242,103 @@ impl Game {
                 match self.turn {
                     White => match from_square.content.unwrap().tipo {
                         King   => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    m.from.up()==m.to ||
+                                    m.from.down()==m.to ||
+                                    m.from.left()==m.to ||
+                                    m.from.right()==m.to ||
+                                    m.from.up().right()==m.to ||
+                                    m.from.up().left()==m.to ||
+                                    m.from.down().right()==m.to ||
+                                    m.from.down().left()==m.to
+                                ) &&
+                                    ! to_square.has_white()
+                            {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad King movement")
+                            }
                         },
                         Queen  => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up().right()) ||
+                                    self.get_to_by(m, |p| p.up().left()) ||
+                                    self.get_to_by(m, |p| p.down().right()) ||
+                                    self.get_to_by(m, |p| p.down().left()) ||
+                                    self.get_to_by(m, |p| p.up()) ||
+                                    self.get_to_by(m, |p| p.down()) ||
+                                    self.get_to_by(m, |p| p.right()) ||
+                                    self.get_to_by(m, |p| p.left())
+                                ) &&
+                                    ! to_square.has_white()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Queen movement")
+                            }
                         },
                         Rook   => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up()) ||
+                                    self.get_to_by(m, |p| p.down()) ||
+                                    self.get_to_by(m, |p| p.right()) ||
+                                    self.get_to_by(m, |p| p.left())
+                                ) &&
+                                    ! to_square.has_white()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Rook movement")
+                            }
                         },
                         Bishop => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up().right()) ||
+                                    self.get_to_by(m, |p| p.up().left()) ||
+                                    self.get_to_by(m, |p| p.down().right()) ||
+                                    self.get_to_by(m, |p| p.down().left())
+                                ) &&
+                                    ! to_square.has_white()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Bishop movement")
+                            }
                         },
                         Knight => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    m.from.up().up().right()==m.to ||
+                                    m.from.up().up().left()==m.to ||
+                                    m.from.down().down().right()==m.to ||
+                                    m.from.down().down().left()==m.to ||
+                                    m.from.right().right().up()==m.to ||
+                                    m.from.right().right().down()==m.to ||
+                                    m.from.left().left().up()==m.to ||
+                                    m.from.left().left().down()==m.to
+                                ) &&
+                                    ! to_square.has_white()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Knight movement")
+                            }
                         },
                         Pawn   => {
                             if (
-                                    m.from.y==Position::ch2y('2') &&        // From initial pawn position
-                                    m.from.up().up()==m.to &&               // `to` and `from` columns are the same
-                                    to_square.has_none() &&                 // Final square is empty
-                                    self.get_square(m.from.up()).has_none() // Middle way square is empty
+                                    m.from.y==Position::ch2y('2') &&
+                                    m.from.up().up()==m.to &&
+                                    to_square.has_none() &&
+                                    self.get_to_by(m, |p| p.up())
                                 ) || (
-                                    m.from.up()==m.to &&        // `from` is one up from `to`
-                                    to_square.has_none() // `to` square is empty
+                                    m.from.up()==m.to &&
+                                    to_square.has_none()
                                 ) || (
-                                    (m.from.up().left()==m.to || m.from.up().right()==m.to) &&
-                                    to_square.has_black() // Check if it's black
+                                    (
+                                        m.from.up().left()==m.to ||
+                                        m.from.up().right()==m.to
+                                    ) && to_square.has_black()
                                 ) {
-                                self.raw_makemove(m)
+                                self.raw_make_move(m)
                             } else {
                                 Err("Bad pawn movement")
                             }
@@ -196,34 +346,103 @@ impl Game {
                     },
                     Black => match from_square.content.unwrap().tipo {
                         King   => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    m.from.up()==m.to ||
+                                    m.from.down()==m.to ||
+                                    m.from.left()==m.to ||
+                                    m.from.right()==m.to ||
+                                    m.from.up().right()==m.to ||
+                                    m.from.up().left()==m.to ||
+                                    m.from.down().right()==m.to ||
+                                    m.from.down().left()==m.to
+                                ) &&
+                                    ! to_square.has_black()
+                            {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad King movement")
+                            }
                         },
                         Queen  => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up().right()) ||
+                                    self.get_to_by(m, |p| p.up().left()) ||
+                                    self.get_to_by(m, |p| p.down().right()) ||
+                                    self.get_to_by(m, |p| p.down().left()) ||
+                                    self.get_to_by(m, |p| p.up()) ||
+                                    self.get_to_by(m, |p| p.down()) ||
+                                    self.get_to_by(m, |p| p.right()) ||
+                                    self.get_to_by(m, |p| p.left())
+                                ) &&
+                                    ! to_square.has_black()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Queen movement")
+                            }
                         },
                         Rook   => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up()) ||
+                                    self.get_to_by(m, |p| p.down()) ||
+                                    self.get_to_by(m, |p| p.right()) ||
+                                    self.get_to_by(m, |p| p.left())
+                                ) &&
+                                    ! to_square.has_black()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Rook movement")
+                            }
                         },
                         Bishop => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    self.get_to_by(m, |p| p.up().right()) ||
+                                    self.get_to_by(m, |p| p.up().left()) ||
+                                    self.get_to_by(m, |p| p.down().right()) ||
+                                    self.get_to_by(m, |p| p.down().left())
+                                ) &&
+                                    ! to_square.has_black()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Bishop movement")
+                            }
                         },
                         Knight => {
-                            Err("NOT YET IMPLEMENTED")
+                            if  (
+                                    m.from.up().up().right()==m.to ||
+                                    m.from.up().up().left()==m.to ||
+                                    m.from.down().down().right()==m.to ||
+                                    m.from.down().down().left()==m.to ||
+                                    m.from.right().right().up()==m.to ||
+                                    m.from.right().right().down()==m.to ||
+                                    m.from.left().left().up()==m.to ||
+                                    m.from.left().left().down()==m.to
+                                ) &&
+                                    ! to_square.has_black()
+                                {
+                                self.raw_make_move(m)
+                            } else {
+                                Err("Bad Knight movement")
+                            }
                         },
                         Pawn   => {
                             if (
-                                    m.from.y==Position::ch2y('7') &&        // From initial pawn position
-                                    m.from.down().down()==m.to &&               // `to` and `from` columns are the same
-                                    to_square.has_none() &&                 // Final square is empty
-                                    self.get_square(m.from.down()).has_none() // Middle way square is empty
+                                    m.from.y==Position::ch2y('7') &&
+                                    m.from.down().down()==m.to &&
+                                    to_square.has_none() &&
+                                    self.get_to_by(m, |p| p.down())
                                 ) || (
-                                    m.from.down()==m.to &&        // `from` is one down from `to`
-                                    to_square.has_none() // `to` square is empty
+                                    m.from.down()==m.to &&
+                                    to_square.has_none()
                                 ) || (
-                                    (m.from.down().left()==m.to || m.from.down().right()==m.to) &&
-                                    to_square.has_white() // Check if it's black
+                                    (
+                                        m.from.down().left()==m.to ||
+                                        m.from.down().right()==m.to
+                                    ) && to_square.has_white()
                                 ) {
-                                self.raw_makemove(m)
+                                self.raw_make_move(m)
                             } else {
                                 Err("Bad pawn movement")
                             }
