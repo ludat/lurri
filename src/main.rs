@@ -662,6 +662,9 @@ impl PieceType {
              _  => Err("Not a valid piece type"),
         }
     }
+    fn safe_from_char(c: char) -> PieceType {
+        PieceType::from_char(c).unwrap()
+    }
 }
 
 impl fmt::Display for PieceType {
