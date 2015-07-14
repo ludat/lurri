@@ -672,6 +672,16 @@ impl PieceType {
     pub fn safe_from_char(c: char) -> PieceType {
         PieceType::from_char(c).unwrap()
     }
+    pub fn get_value(&self) -> i32 {
+        match *self {
+            King   => 32768,
+            Queen  => 9,
+            Rook   => 5,
+            Bishop => 3,
+            Knight => 3,
+            Pawn   => 1,
+        }
+    }
 }
 
 impl fmt::Display for PieceType {
@@ -710,6 +720,12 @@ impl Piece {
             tipo: t,
             color: c,
         }
+    }
+    pub fn get_value(&self) -> i32 {
+        match self.color {
+            White => self.tipo.get_value(),
+            Black => - self.tipo.get_value(),
+         }
     }
 }
 
