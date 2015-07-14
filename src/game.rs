@@ -326,7 +326,9 @@ impl Game {
                             }
                         },
                         Pawn   => {
-                            if (
+                            if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
+                                Err("You must promote that pawn")
+                            } else if (
                                     m.from.y==Position::ch2y('2') &&
                                     m.from.up().up()==m.to &&
                                     to_square.has_none() &&
@@ -430,7 +432,9 @@ impl Game {
                             }
                         },
                         Pawn   => {
-                            if (
+                            if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
+                                Err("You must promote that pawn")
+                            } else if (
                                     m.from.y==Position::ch2y('7') &&
                                     m.from.down().down()==m.to &&
                                     to_square.has_none() &&
@@ -860,6 +864,12 @@ impl Move {
             from: from,
             to:   to,
             tipo: movetype,
+        }
+    }
+    fn is_promotion(&self) -> bool {
+        match self.tipo {
+            MoveType::Promotion (_) => true,
+            _ => false,
         }
     }
     pub fn from_string(s: &str) -> Result<Move, &'static str> {
