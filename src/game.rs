@@ -147,15 +147,19 @@ impl Game {
     }
     pub fn make_move(&mut self, m: &Move) -> Result<(), &'static str> {
         match m.tipo {
-            MoveType::Normal => self.make_normal_move(m),
+            MoveType::Normal => {
+                try!(self.is_valid_normal_move(m));
+                try!(self.raw_make_move(m));
+                Ok(())
+            },
             MoveType::Promotion (pt) => {
                 let col = self.turn;
-                try!(self.make_normal_move(m));
+                try!(self.is_valid_normal_move(m));
+                try!(self.raw_make_move(m)); // BEWARE: This changes the color
                 try!(self.set_square(m.to, Some(Piece::new(pt, col))));
                 Ok(())
             },
-            MoveType::LongCastling => {
-                match self.turn {
+            MoveType::LongCastling => { match self.turn {
                     White => {
                         let king_mov = Move::new(Position::safe_from_chars('e', '1'),
                                 Position::safe_from_chars('c', '1'), MoveType::Normal);
@@ -226,7 +230,7 @@ impl Game {
             },
         }
     }
-    fn make_normal_move(&mut self, m: &Move) -> Result<(), &'static str> {
+    fn is_valid_normal_move(&self, m: &Move) -> Result<(), &'static str> {
         // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
         println!("Making move {}...", m);
         match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
@@ -252,7 +256,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_white()
                             {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad King movement")
                             }
@@ -270,7 +274,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_white()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Queen movement")
                             }
@@ -284,7 +288,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_white()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Rook movement")
                             }
@@ -298,7 +302,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_white()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Bishop movement")
                             }
@@ -316,7 +320,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_white()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Knight movement")
                             }
@@ -336,7 +340,7 @@ impl Game {
                                         m.from.up().right()==m.to
                                     ) && to_square.has_black()
                                 ) {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad pawn movement")
                             }
@@ -356,7 +360,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_black()
                             {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad King movement")
                             }
@@ -374,7 +378,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_black()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Queen movement")
                             }
@@ -388,7 +392,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_black()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Rook movement")
                             }
@@ -402,7 +406,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_black()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Bishop movement")
                             }
@@ -420,7 +424,7 @@ impl Game {
                                 ) &&
                                     ! to_square.has_black()
                                 {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad Knight movement")
                             }
@@ -440,7 +444,7 @@ impl Game {
                                         m.from.down().right()==m.to
                                     ) && to_square.has_white()
                                 ) {
-                                self.raw_make_move(m)
+                                Ok(())
                             } else {
                                 Err("Bad pawn movement")
                             }
