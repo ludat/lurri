@@ -499,7 +499,7 @@ fn test_helper_functions() {
     let pos = Position::safe_from_chars('e','2');
     assert!(!game.is_square(Position::new(0,0)));
     assert!(game.is_square(pos));
-    assert!(game.get_square(pos) == Square::white_pawn());
+    assert_eq!(game.get_square(pos), Square::white_pawn());
     assert!(game.make_move(&Move::safe_from_string("e2e4")).is_ok());
     assert!(game.make_move(&Move::safe_from_string("e2d4")).is_err());
 }
@@ -702,12 +702,12 @@ impl fmt::Display for PieceType {
 
 #[test]
 fn piecetype_from_char () {
-    assert!(Rook == PieceType::safe_from_char('r'));
-    assert!(Knight == PieceType::safe_from_char('n'));
-    assert!(Bishop == PieceType::safe_from_char('b'));
-    assert!(Queen == PieceType::safe_from_char('q'));
-    assert!(King == PieceType::safe_from_char('k'));
-    assert!(Pawn == PieceType::safe_from_char('p'));
+    assert_eq!(PieceType::safe_from_char('r'), Rook);
+    assert_eq!(PieceType::safe_from_char('n'), Knight);
+    assert_eq!(PieceType::safe_from_char('b'), Bishop);
+    assert_eq!(PieceType::safe_from_char('q'), Queen);
+    assert_eq!(PieceType::safe_from_char('k'), King);
+    assert_eq!(PieceType::safe_from_char('p'), Pawn);
     assert!(PieceType::from_char('j').is_err());
 }
 
@@ -947,7 +947,7 @@ impl fmt::Display for Move {
 
 #[test]
 fn move_from_string() {
-    assert!(Move::safe_from_string("a1a1") == Move::new(Position::new(2,2), Position::new(2,2), MoveType::Normal));
+    assert_eq!(Move::safe_from_string("a1a1"), Move::new(Position::new(2,2), Position::new(2,2), MoveType::Normal));
     assert!(Move::from_string("z3a4").is_err());
     assert!(Move::from_string("e9a2").is_err());
     assert!(Move::from_string("aaaa").is_err());
@@ -1053,15 +1053,15 @@ impl fmt::Display for Position {
 
 #[test]
 fn position_from_string() {
-    assert!(Position { x: 2, y: 2 } == Position::safe_from_chars('a', '1'));
+    assert_eq!(Position { x: 2, y: 2 }, Position::safe_from_chars('a', '1'));
     assert!(Position::from_chars('7', '1').is_err());
 }
 
 #[test]
 fn move_position() {
-    assert!(Position::safe_from_chars('e','2').up().down().left().right() == Position::safe_from_chars('e','2'));
-    assert!(Position::safe_from_chars('e','2').up() == Position::safe_from_chars('e','3'));
-    assert!(Position::safe_from_chars('e','2').down() == Position::safe_from_chars('e','1'));
-    assert!(Position::safe_from_chars('e','2').left() == Position::safe_from_chars('d','2'));
-    assert!(Position::safe_from_chars('e','2').right() == Position::safe_from_chars('f','2'));
+    assert_eq!(Position::safe_from_chars('e','2').up().down().left().right(), Position::safe_from_chars('e','2'));
+    assert_eq!(Position::safe_from_chars('e','2').up(), Position::safe_from_chars('e','3'));
+    assert_eq!(Position::safe_from_chars('e','2').down(), Position::safe_from_chars('e','1'));
+    assert_eq!(Position::safe_from_chars('e','2').left(), Position::safe_from_chars('d','2'));
+    assert_eq!(Position::safe_from_chars('e','2').right(), Position::safe_from_chars('f','2'));
 }
