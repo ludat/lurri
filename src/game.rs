@@ -126,6 +126,9 @@ impl Game {
     pub fn get_square(&self, pos: Position) -> Square {
         self.board[pos.y][pos.x].unwrap()
     }
+    pub fn get_piece(&self, pos: Position) -> Option<Piece> {
+        self.get_square(pos).content
+    }
     pub fn set_square(&mut self, pos: Position, piece: Option<Piece>) -> Result<(), &'static str> {
         Ok(self.board[pos.y][pos.x] = Some(Square::new(piece)))
     }
