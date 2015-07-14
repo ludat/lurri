@@ -143,7 +143,10 @@ impl Game {
                 return true
             };
             match self.get_raw_square(p) {
-                Some(Square { content: None }) => { println!("{} containts '{}'", p, self.get_square(p)); continue },
+                Some(Square { content: None }) => {
+                    println!("{} containts '{}'", p, self.get_square(p));
+                    continue
+                },
                 _ => return false,
             }
         };
