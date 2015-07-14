@@ -1,11 +1,11 @@
 use std::fmt;
 use std::ops::Not;
 
-type Board = [[Option<Square>; 12]; 12];
+pub type Board = [[Option<Square>; 12]; 12];
 
 pub struct Game {
-    board: Board,
-    turn: Color,
+    pub board: Board,
+    pub turn: Color,
 }
 
 impl Game {
@@ -120,19 +120,19 @@ impl Game {
     pub fn show(&self) {
         println!("{}", self)
     }
-    fn get_raw_square(&self, pos: Position) -> Option<Square> {
+    pub fn get_raw_square(&self, pos: Position) -> Option<Square> {
         self.board[pos.y][pos.x]
     }
-    fn get_square(&self, pos: Position) -> Square {
+    pub fn get_square(&self, pos: Position) -> Square {
         self.board[pos.y][pos.x].unwrap()
     }
-    fn set_square(&mut self, pos: Position, piece: Option<Piece>) -> Result<(), &'static str> {
+    pub fn set_square(&mut self, pos: Position, piece: Option<Piece>) -> Result<(), &'static str> {
         Ok(self.board[pos.y][pos.x] = Some(Square::new(piece)))
     }
-    fn is_square(&self, pos: Position) -> bool {
+    pub fn is_square(&self, pos: Position) -> bool {
         self.board[pos.y][pos.x].is_some()
     }
-    fn get_to_by<F>(&self, mov: &Move, f: F) -> bool where F: Fn(&Position) -> Position {
+    pub fn get_to_by<F>(&self, mov: &Move, f: F) -> bool where F: Fn(&Position) -> Position {
         let mut p: Position = mov.from;
         loop {
             p = f(&p);
@@ -230,7 +230,7 @@ impl Game {
             },
         }
     }
-    fn is_valid_normal_move(&self, m: &Move) -> Result<(), &'static str> {
+    pub fn is_valid_normal_move(&self, m: &Move) -> Result<(), &'static str> {
         // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
         println!("Making move {}...", m);
         match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
@@ -458,12 +458,12 @@ impl Game {
             },
         }
     }
-    fn raw_make_move(&mut self, m: &Move) -> Result<(), &'static str> {
+    pub fn raw_make_move(&mut self, m: &Move) -> Result<(), &'static str> {
         try!(self.raw_move(m));
         self.turn = !self.turn;
         Ok(())
     }
-    fn raw_move(&mut self, m: &Move) -> Result<(), &'static str> {
+    pub fn raw_move(&mut self, m: &Move) -> Result<(), &'static str> {
         self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
         self.board[m.from.y][m.from.x] = Some(Square::empty());
         Ok(())
@@ -616,7 +616,7 @@ fn test_game_1() {
 
 use self::Color::{White, Black};
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum Color {
+pub enum Color {
     White,
     Black,
 }
@@ -642,13 +642,13 @@ impl Not for Color {
 
 #[test]
 fn color_not() {
-    assert!(Black == !White);
-    assert!(White == !Black);
+    assert_eq!(Black, !White);
+    assert_eq!(White, !Black);
 }
 
 use self::PieceType::{King, Queen, Rook, Bishop, Knight, Pawn};
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum PieceType {
+pub enum PieceType {
     King,
     Queen,
     Rook,
@@ -658,7 +658,7 @@ enum PieceType {
 }
 
 impl PieceType {
-    fn from_char(c: char) -> Result<PieceType, &'static str> {
+    pub fn from_char(c: char) -> Result<PieceType, &'static str> {
         match c {
             'r' => Ok(Rook),
             'n' => Ok(Knight),
@@ -669,7 +669,7 @@ impl PieceType {
              _  => Err("Not a valid piece type"),
         }
     }
-    fn safe_from_char(c: char) -> PieceType {
+    pub fn safe_from_char(c: char) -> PieceType {
         PieceType::from_char(c).unwrap()
     }
 }
@@ -699,13 +699,13 @@ fn piecetype_from_char () {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Piece {
-    tipo: PieceType,
-    color: Color,
+pub struct Piece {
+    pub tipo: PieceType,
+    pub color: Color,
 }
 
 impl Piece {
-    fn new(t: PieceType, c: Color) -> Piece {
+    pub fn new(t: PieceType, c: Color) -> Piece {
         Piece {
             tipo: t,
             color: c,
@@ -734,78 +734,78 @@ impl fmt::Display for Piece {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Square {
+pub struct Square {
     content: Option<Piece>
 }
 
 impl Square {
-    fn new(p: Option<Piece>) -> Square{
+    pub fn new(p: Option<Piece>) -> Square{
         Square { content: p }
     }
 
-    fn has_white(&self) -> bool {
+    pub fn has_white(&self) -> bool {
         match *self {
             Square { content: Some(Piece { tipo: _, color: White }) } => true,
             _ => false,
         }
     }
-    fn has_black(&self) -> bool {
+    pub fn has_black(&self) -> bool {
         match *self {
             Square { content: Some(Piece { tipo: _, color: Black }) } => true,
             _ => false,
         }
     }
-    fn has_none(&self) -> bool {
+    pub fn has_none(&self) -> bool {
         match *self {
             Square { content: None } => true,
             _ => false,
         }
     }
-    fn has_some(&self) -> bool {
+    pub fn has_some(&self) -> bool {
         match *self {
             Square { content: Some(_) } => true,
             _ => false,
         }
     }
 
-    fn black_rook() -> Square {
+    pub fn black_rook() -> Square {
         Square { content: Some(Piece { tipo: Rook, color: Black }) }
     }
-    fn black_knight() -> Square {
+    pub fn black_knight() -> Square {
         Square { content: Some(Piece { tipo: Knight, color: Black }) }
     }
-    fn black_bishop() -> Square {
+    pub fn black_bishop() -> Square {
         Square { content: Some(Piece { tipo: Bishop, color: Black }) }
     }
-    fn black_queen() -> Square {
+    pub fn black_queen() -> Square {
         Square { content: Some(Piece { tipo: Queen, color: Black }) }
     }
-    fn black_king() -> Square {
+    pub fn black_king() -> Square {
         Square { content: Some(Piece { tipo: King, color: Black }) }
     }
-    fn black_pawn() -> Square {
+    pub fn black_pawn() -> Square {
         Square { content: Some(Piece { tipo: Pawn, color: Black }) }
     }
 
-    fn white_rook() -> Square {
+    pub fn white_rook() -> Square {
         Square { content: Some(Piece { tipo: Rook, color: White }) }
     }
-    fn white_knight() -> Square {
+    pub fn white_knight() -> Square {
         Square { content: Some(Piece { tipo: Knight, color: White }) }
     }
-    fn white_bishop() -> Square {
+    pub fn white_bishop() -> Square {
         Square { content: Some(Piece { tipo: Bishop, color: White }) }
     }
-    fn white_queen() -> Square {
+    pub fn white_queen() -> Square {
         Square { content: Some(Piece { tipo: Queen, color: White }) }
     }
-    fn white_king() -> Square {
+    pub fn white_king() -> Square {
         Square { content: Some(Piece { tipo: King, color: White }) }
     }
-    fn white_pawn() -> Square {
+    pub fn white_pawn() -> Square {
         Square { content: Some(Piece { tipo: Pawn, color: White }) }
     }
-    fn empty() -> Square {
+    pub fn empty() -> Square {
         Square { content: None }
     }
 }
@@ -844,7 +844,7 @@ fn helper_square_functions() {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum MoveType {
+pub enum MoveType {
     Normal,
     LongCastling,
     ShortCastling,
@@ -859,14 +859,14 @@ pub struct Move {
 }
 
 impl Move {
-    fn new(from: Position, to: Position, movetype: MoveType) -> Move {
+    pub fn new(from: Position, to: Position, movetype: MoveType) -> Move {
         Move {
             from: from,
             to:   to,
             tipo: movetype,
         }
     }
-    fn is_promotion(&self) -> bool {
+    pub fn is_promotion(&self) -> bool {
         match self.tipo {
             MoveType::Promotion (_) => true,
             _ => false,
@@ -910,7 +910,7 @@ impl Move {
             Err("Not a valid string")
         }
     }
-    fn safe_from_string(s: &str) -> Move {
+    pub fn safe_from_string(s: &str) -> Move {
         Move::from_string(s).unwrap()
     }
 }
@@ -936,19 +936,19 @@ fn move_from_string() {
     assert!(Move::from_string("a").is_err());
 }
 
-type X = usize;
-type Y = usize;
+pub type X = usize;
+pub type Y = usize;
 #[derive(Debug, PartialEq, Clone, Copy)]
-struct Position {
-    x: X,
-    y: Y,
+pub struct Position {
+    pub x: X,
+    pub y: Y,
 }
 
 impl Position {
-    fn new(x: X, y: Y) -> Position {
+    pub fn new(x: X, y: Y) -> Position {
         Position { x: x, y: y}
     }
-    fn from_chars(x: char, y: char) -> Result<Position, &'static str> {
+    pub fn from_chars(x: char, y: char) -> Result<Position, &'static str> {
         Ok(Position {
             x: match x {
                 c @ 'a' ... 'h' => Position::ch2x(c),
@@ -960,10 +960,10 @@ impl Position {
             },
         })
     }
-    fn safe_from_chars(x: char, y: char) -> Position {
+    pub fn safe_from_chars(x: char, y: char) -> Position {
         Position::from_chars(x,y).unwrap()
     }
-    fn ch2y(y: char) -> Y {
+    pub fn ch2y(y: char) -> Y {
         match y {
             '1' => 2,
             '2' => 3,
@@ -976,7 +976,7 @@ impl Position {
              _  => unreachable!(),
         }
     }
-    fn ch2x(x: char) -> X {
+    pub fn ch2x(x: char) -> X {
         match x {
             'a' => 2,
             'b' => 3,
@@ -989,16 +989,16 @@ impl Position {
              _  => unreachable!(),
         }
     }
-    fn up(&self) -> Position {
+    pub fn up(&self) -> Position {
         Position::new(self.x, self.y + 1)
     }
-    fn down(&self) -> Position {
+    pub fn down(&self) -> Position {
         Position::new(self.x, self.y - 1)
     }
-    fn right(&self) -> Position {
+    pub fn right(&self) -> Position {
         Position::new(self.x + 1, self.y)
     }
-    fn left(&self) -> Position {
+    pub fn left(&self) -> Position {
         Position::new(self.x - 1, self.y)
     }
 }
