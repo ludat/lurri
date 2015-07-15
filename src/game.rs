@@ -244,10 +244,10 @@ impl Game {
             (_, None)                       => Err("Not even a valid square"),
             (Some(Square {content: None}), _) => Err("Empty from square"),
             (Some(from_square), Some(to_square)) => {
-                if from_square.content.unwrap().color != self.turn {
+                if from_square.get_color() != self.turn {
                     return Err("Wrong color")
                 };
-                match (self.turn, from_square.content.unwrap().tipo) {
+                match (from_square.get_color(), from_square.get_piece_type()) {
                     (White, King)   => {
                         if  (
                                 m.from.up()==m.to ||
@@ -759,6 +759,13 @@ pub struct Square {
 impl Square {
     pub fn new(p: Option<Piece>) -> Square {
         Square { content: p }
+    }
+
+    fn get_piece_type(&self) -> PieceType {
+        self.content.unwrap().tipo
+    }
+    fn get_color(&self) -> Color {
+        self.content.unwrap().color
     }
 
     pub fn has_white(&self) -> bool {
