@@ -247,133 +247,44 @@ impl Game {
                 if from_square.content.unwrap().color != self.turn {
                     return Err("Wrong color")
                 };
-                match self.turn {
-                    White => match from_square.content.unwrap().tipo {
-                        King   => {
-                            if  (
-                                    m.from.up()==m.to ||
-                                    m.from.down()==m.to ||
-                                    m.from.left()==m.to ||
-                                    m.from.right()==m.to ||
-                                    m.from.up().right()==m.to ||
-                                    m.from.up().left()==m.to ||
-                                    m.from.down().right()==m.to ||
-                                    m.from.down().left()==m.to
-                                ) &&
-                                    ! to_square.has_white()
-                            {
-                                Ok(())
-                            } else {
-                                Err("Bad King movement")
-                            }
-                        },
-                        Queen  => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up().right()) ||
-                                    self.get_to_by(m, |p| p.up().left()) ||
-                                    self.get_to_by(m, |p| p.down().right()) ||
-                                    self.get_to_by(m, |p| p.down().left()) ||
-                                    self.get_to_by(m, |p| p.up()) ||
-                                    self.get_to_by(m, |p| p.down()) ||
-                                    self.get_to_by(m, |p| p.right()) ||
-                                    self.get_to_by(m, |p| p.left())
-                                ) &&
-                                    ! to_square.has_white()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Queen movement")
-                            }
-                        },
-                        Rook   => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up()) ||
-                                    self.get_to_by(m, |p| p.down()) ||
-                                    self.get_to_by(m, |p| p.right()) ||
-                                    self.get_to_by(m, |p| p.left())
-                                ) &&
-                                    ! to_square.has_white()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Rook movement")
-                            }
-                        },
-                        Bishop => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up().right()) ||
-                                    self.get_to_by(m, |p| p.up().left()) ||
-                                    self.get_to_by(m, |p| p.down().right()) ||
-                                    self.get_to_by(m, |p| p.down().left())
-                                ) &&
-                                    ! to_square.has_white()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Bishop movement")
-                            }
-                        },
-                        Knight => {
-                            if  (
-                                    m.from.up().up().right()==m.to ||
-                                    m.from.up().up().left()==m.to ||
-                                    m.from.down().down().right()==m.to ||
-                                    m.from.down().down().left()==m.to ||
-                                    m.from.right().right().up()==m.to ||
-                                    m.from.right().right().down()==m.to ||
-                                    m.from.left().left().up()==m.to ||
-                                    m.from.left().left().down()==m.to
-                                ) &&
-                                    ! to_square.has_white()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Knight movement")
-                            }
-                        },
-                        Pawn   => {
-                            if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
-                                Err("You must promote that pawn")
-                            } else if (
-                                    m.from.y==Position::ch2y('2') &&
-                                    m.from.up().up()==m.to &&
-                                    to_square.has_none() &&
-                                    self.get_to_by(m, |p| p.up())
-                                ) || (
-                                    m.from.up()==m.to &&
-                                    to_square.has_none()
-                                ) || (
-                                    (
-                                        m.from.up().left()==m.to ||
-                                        m.from.up().right()==m.to
-                                    ) && to_square.has_black()
-                                ) {
-                                Ok(())
-                            } else {
-                                Err("Bad pawn movement")
-                            }
-                        },
+                match (self.turn, from_square.content.unwrap().tipo) {
+                    (White, King)   => {
+                        if  (
+                                m.from.up()==m.to ||
+                                m.from.down()==m.to ||
+                                m.from.left()==m.to ||
+                                m.from.right()==m.to ||
+                                m.from.up().right()==m.to ||
+                                m.from.up().left()==m.to ||
+                                m.from.down().right()==m.to ||
+                                m.from.down().left()==m.to
+                            ) &&
+                                ! to_square.has_white()
+                        {
+                            Ok(())
+                        } else {
+                            Err("Bad King movement")
+                        }
                     },
-                    Black => match from_square.content.unwrap().tipo {
-                        King   => {
-                            if  (
-                                    m.from.up()==m.to ||
-                                    m.from.down()==m.to ||
-                                    m.from.left()==m.to ||
-                                    m.from.right()==m.to ||
-                                    m.from.up().right()==m.to ||
-                                    m.from.up().left()==m.to ||
-                                    m.from.down().right()==m.to ||
-                                    m.from.down().left()==m.to
-                                ) &&
-                                    ! to_square.has_black()
-                            {
-                                Ok(())
-                            } else {
-                                Err("Bad King movement")
-                            }
-                        },
-                        Queen  => {
+                    (Black, King)   => {
+                        if  (
+                                m.from.up()==m.to ||
+                                m.from.down()==m.to ||
+                                m.from.left()==m.to ||
+                                m.from.right()==m.to ||
+                                m.from.up().right()==m.to ||
+                                m.from.up().left()==m.to ||
+                                m.from.down().right()==m.to ||
+                                m.from.down().left()==m.to
+                            ) &&
+                                ! to_square.has_black()
+                        {
+                            Ok(())
+                        } else {
+                            Err("Bad King movement")
+                        }
+                    },
+                    (White, Queen)  => {
                             if  (
                                     self.get_to_by(m, |p| p.up().right()) ||
                                     self.get_to_by(m, |p| p.up().left()) ||
@@ -384,81 +295,166 @@ impl Game {
                                     self.get_to_by(m, |p| p.right()) ||
                                     self.get_to_by(m, |p| p.left())
                                 ) &&
-                                    ! to_square.has_black()
+                                    ! to_square.has_white()
                                 {
                                 Ok(())
                             } else {
                                 Err("Bad Queen movement")
                             }
-                        },
-                        Rook   => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up()) ||
-                                    self.get_to_by(m, |p| p.down()) ||
-                                    self.get_to_by(m, |p| p.right()) ||
-                                    self.get_to_by(m, |p| p.left())
-                                ) &&
-                                    ! to_square.has_black()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Rook movement")
-                            }
-                        },
-                        Bishop => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up().right()) ||
-                                    self.get_to_by(m, |p| p.up().left()) ||
-                                    self.get_to_by(m, |p| p.down().right()) ||
-                                    self.get_to_by(m, |p| p.down().left())
-                                ) &&
-                                    ! to_square.has_black()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Bishop movement")
-                            }
-                        },
-                        Knight => {
-                            if  (
-                                    m.from.up().up().right()==m.to ||
-                                    m.from.up().up().left()==m.to ||
-                                    m.from.down().down().right()==m.to ||
-                                    m.from.down().down().left()==m.to ||
-                                    m.from.right().right().up()==m.to ||
-                                    m.from.right().right().down()==m.to ||
-                                    m.from.left().left().up()==m.to ||
-                                    m.from.left().left().down()==m.to
-                                ) &&
-                                    ! to_square.has_black()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Knight movement")
-                            }
-                        },
-                        Pawn   => {
-                            if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
-                                Err("You must promote that pawn")
-                            } else if (
-                                    m.from.y==Position::ch2y('7') &&
-                                    m.from.down().down()==m.to &&
-                                    to_square.has_none() &&
-                                    self.get_to_by(m, |p| p.down())
-                                ) || (
-                                    m.from.down()==m.to &&
-                                    to_square.has_none()
-                                ) || (
-                                    (
-                                        m.from.down().left()==m.to ||
-                                        m.from.down().right()==m.to
-                                    ) && to_square.has_white()
-                                ) {
-                                Ok(())
-                            } else {
-                                Err("Bad pawn movement")
-                            }
-                        },
+                    },
+                    (Black, Queen)  => {
+                        if  (
+                                self.get_to_by(m, |p| p.up().right()) ||
+                                self.get_to_by(m, |p| p.up().left()) ||
+                                self.get_to_by(m, |p| p.down().right()) ||
+                                self.get_to_by(m, |p| p.down().left()) ||
+                                self.get_to_by(m, |p| p.up()) ||
+                                self.get_to_by(m, |p| p.down()) ||
+                                self.get_to_by(m, |p| p.right()) ||
+                                self.get_to_by(m, |p| p.left())
+                            ) &&
+                                ! to_square.has_black()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Queen movement")
+                        }
+                    },
+                    (White, Rook)   => {
+                        if  (
+                                self.get_to_by(m, |p| p.up()) ||
+                                self.get_to_by(m, |p| p.down()) ||
+                                self.get_to_by(m, |p| p.right()) ||
+                                self.get_to_by(m, |p| p.left())
+                            ) &&
+                                ! to_square.has_white()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Rook movement")
+                        }
+                    },
+                    (Black, Rook)   => {
+                        if  (
+                                self.get_to_by(m, |p| p.up()) ||
+                                self.get_to_by(m, |p| p.down()) ||
+                                self.get_to_by(m, |p| p.right()) ||
+                                self.get_to_by(m, |p| p.left())
+                            ) &&
+                                ! to_square.has_black()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Rook movement")
+                        }
+                    },
+                    (White, Bishop) => {
+                        if  (
+                                self.get_to_by(m, |p| p.up().right()) ||
+                                self.get_to_by(m, |p| p.up().left()) ||
+                                self.get_to_by(m, |p| p.down().right()) ||
+                                self.get_to_by(m, |p| p.down().left())
+                            ) &&
+                                ! to_square.has_white()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Bishop movement")
+                        }
+                    },
+                    (Black, Bishop) => {
+                        if  (
+                                self.get_to_by(m, |p| p.up().right()) ||
+                                self.get_to_by(m, |p| p.up().left()) ||
+                                self.get_to_by(m, |p| p.down().right()) ||
+                                self.get_to_by(m, |p| p.down().left())
+                            ) &&
+                                ! to_square.has_black()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Bishop movement")
+                        }
+                    },
+                    (White, Knight) => {
+                        if  (
+                                m.from.up().up().right()==m.to ||
+                                m.from.up().up().left()==m.to ||
+                                m.from.down().down().right()==m.to ||
+                                m.from.down().down().left()==m.to ||
+                                m.from.right().right().up()==m.to ||
+                                m.from.right().right().down()==m.to ||
+                                m.from.left().left().up()==m.to ||
+                                m.from.left().left().down()==m.to
+                            ) &&
+                                ! to_square.has_white()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Knight movement")
+                        }
+                    },
+                    (Black, Knight) => {
+                        if  (
+                                m.from.up().up().right()==m.to ||
+                                m.from.up().up().left()==m.to ||
+                                m.from.down().down().right()==m.to ||
+                                m.from.down().down().left()==m.to ||
+                                m.from.right().right().up()==m.to ||
+                                m.from.right().right().down()==m.to ||
+                                m.from.left().left().up()==m.to ||
+                                m.from.left().left().down()==m.to
+                            ) &&
+                                ! to_square.has_black()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Knight movement")
+                        }
+                    },
+                    (White, Pawn)   => {
+                        if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
+                            Err("You must promote that pawn")
+                        } else if (
+                                m.from.y==Position::ch2y('2') &&
+                                m.from.up().up()==m.to &&
+                                to_square.has_none() &&
+                                self.get_to_by(m, |p| p.up())
+                            ) || (
+                                m.from.up()==m.to &&
+                                to_square.has_none()
+                            ) || (
+                                (
+                                    m.from.up().left()==m.to ||
+                                    m.from.up().right()==m.to
+                                ) && to_square.has_black()
+                            ) {
+                            Ok(())
+                        } else {
+                            Err("Bad pawn movement")
+                        }
+                    },
+                    (Black, Pawn)   => {
+                        if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
+                            Err("You must promote that pawn")
+                        } else if (
+                                m.from.y==Position::ch2y('7') &&
+                                m.from.down().down()==m.to &&
+                                to_square.has_none() &&
+                                self.get_to_by(m, |p| p.down())
+                            ) || (
+                                m.from.down()==m.to &&
+                                to_square.has_none()
+                            ) || (
+                                (
+                                    m.from.down().left()==m.to ||
+                                    m.from.down().right()==m.to
+                                ) && to_square.has_white()
+                            ) {
+                            Ok(())
+                        } else {
+                            Err("Bad pawn movement")
+                        }
                     },
                 }
             },
