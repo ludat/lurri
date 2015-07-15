@@ -285,22 +285,22 @@ impl Game {
                         }
                     },
                     (White, Queen)  => {
-                            if  (
-                                    self.get_to_by(m, |p| p.up().right()) ||
-                                    self.get_to_by(m, |p| p.up().left()) ||
-                                    self.get_to_by(m, |p| p.down().right()) ||
-                                    self.get_to_by(m, |p| p.down().left()) ||
-                                    self.get_to_by(m, |p| p.up()) ||
-                                    self.get_to_by(m, |p| p.down()) ||
-                                    self.get_to_by(m, |p| p.right()) ||
-                                    self.get_to_by(m, |p| p.left())
-                                ) &&
-                                    ! to_square.has_white()
-                                {
-                                Ok(())
-                            } else {
-                                Err("Bad Queen movement")
-                            }
+                        if  (
+                                self.get_to_by(m, |p| p.up().right()) ||
+                                self.get_to_by(m, |p| p.up().left()) ||
+                                self.get_to_by(m, |p| p.down().right()) ||
+                                self.get_to_by(m, |p| p.down().left()) ||
+                                self.get_to_by(m, |p| p.up()) ||
+                                self.get_to_by(m, |p| p.down()) ||
+                                self.get_to_by(m, |p| p.right()) ||
+                                self.get_to_by(m, |p| p.left())
+                            ) &&
+                                ! to_square.has_white()
+                            {
+                            Ok(())
+                        } else {
+                            Err("Bad Queen movement")
+                        }
                     },
                     (Black, Queen)  => {
                         if  (
@@ -757,7 +757,7 @@ pub struct Square {
 }
 
 impl Square {
-    pub fn new(p: Option<Piece>) -> Square{
+    pub fn new(p: Option<Piece>) -> Square {
         Square { content: p }
     }
 
