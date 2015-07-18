@@ -889,9 +889,9 @@ pub enum MoveType {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Move {
-    from: Position,
-    to: Position,
-    tipo: MoveType,
+    pub from: Position,
+    pub to: Position,
+    pub tipo: MoveType,
 }
 
 impl Move {
