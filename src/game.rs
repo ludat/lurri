@@ -1,9 +1,10 @@
 use std::fmt;
 use std::ops::Not;
 
+#[macro_export]
 macro_rules! piece(
     ($color:pat, $piece:pat) => (
-        Piece { tipo: $piece, color: $color }
+        $crate::game::Piece { tipo: $piece, color: $color }
     );
 );
 
