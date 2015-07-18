@@ -1,6 +1,12 @@
 use std::fmt;
 use std::ops::Not;
 
+macro_rules! piece(
+    ($color:pat, $piece:pat) => (
+        Piece { tipo: $piece, color: $color }
+    );
+);
+
 pub type Board = [[Option<Square>; 12]; 12];
 
 pub struct Game {
@@ -266,7 +272,7 @@ impl Game {
                             Err("Bad King movement")
                         }
                     },
-                    (Black, King)   => {
+                    piece!(Black, King) => {
                         if  (
                                 m.from.up()==m.to ||
                                 m.from.down()==m.to ||
@@ -284,7 +290,7 @@ impl Game {
                             Err("Bad King movement")
                         }
                     },
-                    (White, Queen)  => {
+                    piece!(White, Queen) => {
                         if  (
                                 self.get_to_by(m, |p| p.up().right()) ||
                                 self.get_to_by(m, |p| p.up().left()) ||
@@ -302,7 +308,7 @@ impl Game {
                             Err("Bad Queen movement")
                         }
                     },
-                    (Black, Queen)  => {
+                    piece!(Black, Queen) => {
                         if  (
                                 self.get_to_by(m, |p| p.up().right()) ||
                                 self.get_to_by(m, |p| p.up().left()) ||
@@ -320,7 +326,7 @@ impl Game {
                             Err("Bad Queen movement")
                         }
                     },
-                    (White, Rook)   => {
+                    piece!(White, Rook) => {
                         if  (
                                 self.get_to_by(m, |p| p.up()) ||
                                 self.get_to_by(m, |p| p.down()) ||
@@ -334,7 +340,7 @@ impl Game {
                             Err("Bad Rook movement")
                         }
                     },
-                    (Black, Rook)   => {
+                    piece!(Black, Rook) => {
                         if  (
                                 self.get_to_by(m, |p| p.up()) ||
                                 self.get_to_by(m, |p| p.down()) ||
@@ -348,7 +354,7 @@ impl Game {
                             Err("Bad Rook movement")
                         }
                     },
-                    (White, Bishop) => {
+                    piece!(White, Bishop) => {
                         if  (
                                 self.get_to_by(m, |p| p.up().right()) ||
                                 self.get_to_by(m, |p| p.up().left()) ||
@@ -362,7 +368,7 @@ impl Game {
                             Err("Bad Bishop movement")
                         }
                     },
-                    (Black, Bishop) => {
+                    piece!(Black, Bishop) => {
                         if  (
                                 self.get_to_by(m, |p| p.up().right()) ||
                                 self.get_to_by(m, |p| p.up().left()) ||
@@ -376,7 +382,7 @@ impl Game {
                             Err("Bad Bishop movement")
                         }
                     },
-                    (White, Knight) => {
+                    piece!(White, Knight) => {
                         if  (
                                 m.from.up().up().right()==m.to ||
                                 m.from.up().up().left()==m.to ||
@@ -394,7 +400,7 @@ impl Game {
                             Err("Bad Knight movement")
                         }
                     },
-                    (Black, Knight) => {
+                    piece!(Black, Knight) => {
                         if  (
                                 m.from.up().up().right()==m.to ||
                                 m.from.up().up().left()==m.to ||
@@ -412,7 +418,7 @@ impl Game {
                             Err("Bad Knight movement")
                         }
                     },
-                    (White, Pawn)   => {
+                    piece!(White, Pawn)   => {
                         if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
                             Err("You must promote that pawn")
                         } else if (
@@ -434,7 +440,7 @@ impl Game {
                             Err("Bad pawn movement")
                         }
                     },
-                    (Black, Pawn)   => {
+                    piece!(Black, Pawn)   => {
                         if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
                             Err("You must promote that pawn")
                         } else if (
@@ -734,19 +740,19 @@ impl Piece {
 impl fmt::Display for Piece {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
-            Piece { tipo: Rook   , color: Black } => 'R',
-            Piece { tipo: Knight , color: Black } => 'N',
-            Piece { tipo: Bishop , color: Black } => 'B',
-            Piece { tipo: Queen  , color: Black } => 'Q',
-            Piece { tipo: King   , color: Black } => 'K',
-            Piece { tipo: Pawn   , color: Black } => 'P',
+            piece!(Black, Rook)   => 'R',
+            piece!(Black, Knight) => 'N',
+            piece!(Black, Bishop) => 'B',
+            piece!(Black, Queen)  => 'Q',
+            piece!(Black, King)   => 'K',
+            piece!(Black, Pawn)   => 'P',
 
-            Piece { tipo: Rook   , color: White } => 'r',
-            Piece { tipo: Knight , color: White } => 'n',
-            Piece { tipo: Bishop , color: White } => 'b',
-            Piece { tipo: Queen  , color: White } => 'q',
-            Piece { tipo: King   , color: White } => 'k',
-            Piece { tipo: Pawn   , color: White } => 'p'
+            piece!(White, Rook)   => 'r',
+            piece!(White, Knight) => 'n',
+            piece!(White, Bishop) => 'b',
+            piece!(White, Queen)  => 'q',
+            piece!(White, King)   => 'k',
+            piece!(White, Pawn)   => 'p',
         })
     }
 }
@@ -804,13 +810,13 @@ impl Square {
 
     pub fn has_white(&self) -> bool {
         match *self {
-            Square { content: Some(Piece { tipo: _, color: White }) } => true,
+            Square { content: Some(piece!(White, _)) } => true,
             _ => false,
         }
     }
     pub fn has_black(&self) -> bool {
         match *self {
-            Square { content: Some(Piece { tipo: _, color: Black }) } => true,
+            Square { content: Some(piece! (Black, _)) } => true,
             _ => false,
         }
     }
