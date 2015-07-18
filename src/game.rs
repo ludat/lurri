@@ -250,11 +250,11 @@ impl Game {
             (_, None)                       => Err("Not even a valid square"),
             (Some(Square {content: None}), _) => Err("Empty from square"),
             (Some(from_square), Some(to_square)) => {
-                if from_square.get_color() != self.turn {
+                if from_square.get_piece().color != self.turn {
                     return Err("Wrong color")
                 };
-                match (from_square.get_color(), from_square.get_piece_type()) {
-                    (White, King)   => {
+                match from_square.get_piece() {
+                    piece!(White, King)   => {
                         if  (
                                 m.from.up()==m.to ||
                                 m.from.down()==m.to ||
@@ -806,6 +806,10 @@ impl Square {
     }
     pub fn empty() -> Square {
         Square { content: None }
+    }
+
+    pub fn get_piece(&self) -> Piece {
+        self.content.unwrap()
     }
 
     pub fn has_white(&self) -> bool {
