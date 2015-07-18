@@ -812,6 +812,14 @@ impl Square {
         self.content.unwrap()
     }
 
+    pub fn has_color(&self, color: Color) -> bool {
+        match (color, *self) {
+            (White, Square { content: Some(piece!(White, _)) }) => true,
+            (Black, Square { content: Some(piece!(Black, _)) }) => true,
+            _ => false,
+        }
+    }
+
     pub fn has_white(&self) -> bool {
         match *self {
             Square { content: Some(piece!(White, _)) } => true,
