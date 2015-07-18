@@ -761,38 +761,6 @@ impl Square {
         Square { content: p }
     }
 
-    fn get_piece_type(&self) -> PieceType {
-        self.content.unwrap().tipo
-    }
-    fn get_color(&self) -> Color {
-        self.content.unwrap().color
-    }
-
-    pub fn has_white(&self) -> bool {
-        match *self {
-            Square { content: Some(Piece { tipo: _, color: White }) } => true,
-            _ => false,
-        }
-    }
-    pub fn has_black(&self) -> bool {
-        match *self {
-            Square { content: Some(Piece { tipo: _, color: Black }) } => true,
-            _ => false,
-        }
-    }
-    pub fn has_none(&self) -> bool {
-        match *self {
-            Square { content: None } => true,
-            _ => false,
-        }
-    }
-    pub fn has_some(&self) -> bool {
-        match *self {
-            Square { content: Some(_) } => true,
-            _ => false,
-        }
-    }
-
     pub fn black_rook() -> Square {
         Square { content: Some(Piece { tipo: Rook, color: Black }) }
     }
@@ -832,6 +800,31 @@ impl Square {
     }
     pub fn empty() -> Square {
         Square { content: None }
+    }
+
+    pub fn has_white(&self) -> bool {
+        match *self {
+            Square { content: Some(Piece { tipo: _, color: White }) } => true,
+            _ => false,
+        }
+    }
+    pub fn has_black(&self) -> bool {
+        match *self {
+            Square { content: Some(Piece { tipo: _, color: Black }) } => true,
+            _ => false,
+        }
+    }
+    pub fn has_none(&self) -> bool {
+        match *self {
+            Square { content: None } => true,
+            _ => false,
+        }
+    }
+    pub fn has_some(&self) -> bool {
+        match *self {
+            Square { content: Some(_) } => true,
+            _ => false,
+        }
     }
 }
 
