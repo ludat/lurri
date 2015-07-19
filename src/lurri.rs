@@ -19,7 +19,7 @@ pub fn get_move(game: &Game) -> Move {
 impl Game {
     pub fn evaluate(&self) -> i32 {
         let mut sum = 0;
-        for pos in positions() {
+        for pos in Position::all() {
             match self.get_piece(pos) {
                 None => {},
                 Some(piece) => sum += piece.get_value(),
@@ -30,7 +30,7 @@ impl Game {
 
     pub fn get_valid_moves(&self) -> Vec<Move> {
         let mut moves: Vec<Move> = Vec::with_capacity(75);
-        for from_pos in positions() {
+        for from_pos in Position::all() {
             if !  self.get_square(from_pos).has_color(self.turn) {
                 continue
             };
@@ -164,48 +164,4 @@ impl Game {
 fn test_evaluate() {
     let game: Game = Game::new();
     assert_eq!(game.evaluate(), 0);
-}
-
-pub struct PositionIterator {
-    pub curr: Position,
-}
-
-fn positions() -> PositionIterator {
-    PositionIterator { curr: Position::new(0,0)}
-}
-
-impl Iterator for PositionIterator {
-    type Item = Position;
-    fn next(&mut self) -> Option<Self::Item>{
-        match self.curr {
-            Position { x: 0, y: 0 } => {
-                self.curr.x = 2;
-                self.curr.y = 2;
-                Some(self.curr)
-            },
-            Position { x: 9, y: 9 } => {
-                None
-            },
-            Position { x: 9, y: _ } => {
-                self.curr.y += 1;
-                self.curr.x = 2;
-                Some(self.curr)
-            },
-            Position { x: _, y: _ } => {
-                self.curr.x += 1;
-                Some(self.curr)
-            },
-        }
-    }
-}
-
-#[test]
-fn test_positions() {
-    assert_eq!(positions().count(), 64);
-    assert_eq!(Position::safe_from_chars('h','8'), positions().last().unwrap());
-    assert_eq!(Position::safe_from_chars('a','1'), positions().nth(0).unwrap());
-    assert_eq!(Position::safe_from_chars('e','1'), positions().nth(4).unwrap());
-    assert_eq!(Position::safe_from_chars('a','2'), positions().nth(8).unwrap());
-    assert_eq!(Position::safe_from_chars('a','5'), positions().nth(32).unwrap());
-    assert_eq!(Position::safe_from_chars('h','8'), positions().nth(63).unwrap());
 }
