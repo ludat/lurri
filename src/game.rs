@@ -629,6 +629,15 @@ pub enum Color {
     Black,
 }
 
+impl Color {
+    pub fn get_sign(&self) -> i32{
+        match *self {
+            White =>  1,
+            Black => -1,
+        }
+    }
+}
+
 impl fmt::Display for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match *self {
@@ -682,7 +691,7 @@ impl PieceType {
     }
     pub fn get_value(&self) -> i32 {
         match *self {
-            King   => 32768,
+            King   => 128,
             Queen  => 9,
             Rook   => 5,
             Bishop => 3,
@@ -730,10 +739,7 @@ impl Piece {
         }
     }
     pub fn get_value(&self) -> i32 {
-        match self.color {
-            White => self.tipo.get_value(),
-            Black => - self.tipo.get_value(),
-         }
+        self.color.get_sign() * self.tipo.get_value()
     }
 }
 
