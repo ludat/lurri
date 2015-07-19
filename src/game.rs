@@ -10,6 +10,7 @@ macro_rules! piece(
 
 pub type Board = [[Option<Square>; 12]; 12];
 
+#[derive(Debug, Clone)]
 pub struct Game {
     pub board: Board,
     pub turn: Color,
