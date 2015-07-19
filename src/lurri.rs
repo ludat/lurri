@@ -54,12 +54,48 @@ impl Game {
                         }
                     }
                 },
-                piece!(White, Queen)  => { },
-                piece!(Black, Queen)  => { },
-                piece!(White, Rook)   => { },
-                piece!(Black, Rook)   => { },
-                piece!(White, Bishop) => { },
-                piece!(Black, Bishop) => { },
+                piece!(color, Queen)  => {
+                    for dir in [
+                            Direction::Up, Direction::Down,
+                            Direction::Left, Direction::Right,
+                            Direction::UpRight, Direction::UpLeft,
+                            Direction::DownRight, Direction::DownLeft].iter(){
+                        for to_pos in from_pos.iter_to(*dir){
+                            match self.get_raw_square(to_pos) {
+                                Some(to_square) if ! to_square.has_color(color) => {
+                                    moves.push(Move::new(from_pos, to_pos, MoveType::Normal));
+                                },
+                                _ => break,
+                            }
+                        }
+                    }
+                },
+                piece!(color, Rook)   => {
+                    for dir in [Direction::Up, Direction::Down, Direction::Left, Direction::Right].iter(){
+                        for to_pos in from_pos.iter_to(*dir){
+                            match self.get_raw_square(to_pos) {
+                                Some(to_square) if ! to_square.has_color(color) => {
+                                    moves.push(Move::new(from_pos, to_pos, MoveType::Normal));
+                                },
+                                _ => break,
+                            }
+                        }
+                    }
+                },
+                piece!(color, Bishop) => {
+                    for dir in [
+                            Direction::UpRight, Direction::UpLeft,
+                            Direction::DownRight, Direction::DownLeft].iter(){
+                        for to_pos in from_pos.iter_to(*dir){
+                            match self.get_raw_square(to_pos) {
+                                Some(to_square) if ! to_square.has_color(color) => {
+                                    moves.push(Move::new(from_pos, to_pos, MoveType::Normal));
+                                },
+                                _ => break,
+                            }
+                        }
+                    }
+                },
                 piece!(color, Knight) => {
                     for to_pos in [ from_pos.up()    .up()    .right(),
                                     from_pos.up()    .up()    .left(),
