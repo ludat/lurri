@@ -980,6 +980,18 @@ pub struct Position {
     pub y: Y,
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+    UpRight,
+    UpLeft,
+    DownRight,
+    DownLeft,
+}
+
 impl Position {
     pub fn new(x: X, y: Y) -> Position {
         Position { x: x, y: y}
@@ -1025,6 +1037,18 @@ impl Position {
              _  => unreachable!(),
         }
     }
+    pub fn go(&self, dir: Direction) -> Position {
+        match dir {
+            Direction::Up        => self.up(),
+            Direction::Down      => self.down(),
+            Direction::Right     => self.right(),
+            Direction::Left      => self.left(),
+            Direction::UpRight   => self.up().right(),
+            Direction::UpLeft    => self.up().left(),
+            Direction::DownRight => self.down().right(),
+            Direction::DownLeft  => self.down().left(),
+        }
+    }
     pub fn up(&self) -> Position {
         Position::new(self.x, self.y + 1)
     }
@@ -1036,6 +1060,12 @@ impl Position {
     }
     pub fn left(&self) -> Position {
         Position::new(self.x - 1, self.y)
+    }
+    pub fn all() -> AllPositionsIterator {
+        AllPositionsIterator { curr: Position::new(0,0)}
+    }
+    pub fn iter_to(&self, dir: Direction) -> PositionIterator {
+        PositionIterator { curr: *self, dir: dir}
     }
 }
 
@@ -1068,6 +1098,65 @@ impl fmt::Display for Position {
     }
 }
 
+pub struct AllPositionsIterator {
+    pub curr: Position,
+}
+
+impl Iterator for AllPositionsIterator {
+    type Item = Position;
+    fn next(&mut self) -> Option<Self::Item>{
+        match self.curr {
+            Position { x: 0, y: 0 } => {
+                self.curr.x = 2;
+                self.curr.y = 2;
+                Some(self.curr)
+            },
+            Position { x: 9, y: 9 } => {
+                None
+            },
+            Position { x: 9, y: _ } => {
+                self.curr.y += 1;
+                self.curr.x = 2;
+                Some(self.curr)
+            },
+            Position { x: _, y: _ } => {
+                self.curr.x += 1;
+                Some(self.curr)
+            },
+        }
+    }
+}
+
+pub struct PositionIterator {
+    pub curr: Position,
+    pub dir: Direction,
+}
+
+impl PositionIterator {
+    pub fn new(pos: Position, dir: Direction) -> PositionIterator {
+        PositionIterator { curr: pos, dir: dir }
+    }
+}
+
+impl Iterator for PositionIterator {
+    type Item = Position;
+    fn next(&mut self) -> Option<Self::Item>{
+        self.curr = self.curr.go(self.dir);
+        Some(self.curr)
+    }
+}
+
+#[test]
+fn test_positions() {
+    assert_eq!(Position::all().count(), 64);
+    assert_eq!(Position::safe_from_chars('h','8'), Position::all().last().unwrap());
+    assert_eq!(Position::safe_from_chars('a','1'), Position::all().nth(0).unwrap());
+    assert_eq!(Position::safe_from_chars('e','1'), Position::all().nth(4).unwrap());
+    assert_eq!(Position::safe_from_chars('a','2'), Position::all().nth(8).unwrap());
+    assert_eq!(Position::safe_from_chars('a','5'), Position::all().nth(32).unwrap());
+    assert_eq!(Position::safe_from_chars('h','8'), Position::all().nth(63).unwrap());
+}
+
 #[test]
 fn position_from_string() {
     assert_eq!(Position { x: 2, y: 2 }, Position::safe_from_chars('a', '1'));
@@ -1077,8 +1166,14 @@ fn position_from_string() {
 #[test]
 fn move_position() {
     assert_eq!(Position::safe_from_chars('e','2').up().down().left().right(), Position::safe_from_chars('e','2'));
+
     assert_eq!(Position::safe_from_chars('e','2').up(), Position::safe_from_chars('e','3'));
     assert_eq!(Position::safe_from_chars('e','2').down(), Position::safe_from_chars('e','1'));
-    assert_eq!(Position::safe_from_chars('e','2').left(), Position::safe_from_chars('d','2'));
     assert_eq!(Position::safe_from_chars('e','2').right(), Position::safe_from_chars('f','2'));
+    assert_eq!(Position::safe_from_chars('e','2').left(), Position::safe_from_chars('d','2'));
+
+    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Up), Position::safe_from_chars('e','3'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Down), Position::safe_from_chars('e','1'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Right), Position::safe_from_chars('f','2'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Left), Position::safe_from_chars('d','2'));
 }
