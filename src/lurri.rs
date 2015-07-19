@@ -6,14 +6,24 @@ use game::Color::{White, Black};
 extern crate rand;
 
 pub fn get_move(game: &Game) -> Move {
-    let moves = game.get_valid_moves();
-    // let random = rand::random::<usize>() % moves.len();
-    // println!("Random = {}", random);
+    let moves = game.get_all_valid_moves();
     println!("Posible moves:");
     for (i, mov) in moves.iter().enumerate() {
         println!("{}: {} - {} -> {}", i+1, mov, game.get_square(mov.from), game.get_square(mov.to));
     };
-    moves[0]
+
+    let mut best_mov: Move = *moves.iter().nth(0).unwrap();
+    let mut best_val: i32 = game.evaluate_move(&best_mov);
+    for mov in moves.iter() {
+        let value = game.evaluate_move(mov);
+        println!("{} ?? {}", best_val, value);
+        if best_val > value {
+            println!("Found new best");
+            best_mov = *mov;
+            best_val = value;
+        }
+    };
+    best_mov
 }
 
 impl Game {
