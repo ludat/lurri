@@ -759,7 +759,7 @@ impl fmt::Display for Piece {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Square {
-    content: Option<Piece>
+    pub content: Option<Piece>
 }
 
 impl Square {
