@@ -22,7 +22,10 @@ impl Game {
         for pos in Position::all() {
             match self.get_piece(pos) {
                 None => {},
-                Some(piece) => sum += piece.get_value(),
+                Some(piece) => {
+                    sum += piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(pos).len() as i32)
+                },
+
             }
         };
         sum
