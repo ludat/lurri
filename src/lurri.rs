@@ -1,29 +1,96 @@
 use std::collections::{LinkedList};
+use std::cmp;
+use std::cmp::{Ord, Eq, PartialOrd, Ordering};
 use game::*;
 use game::PieceType::{King, Queen, Rook, Bishop, Knight, Pawn};
 use game::Color::{White, Black};
 
 extern crate rand;
 
-pub fn get_move(game: &Game) -> Move {
-    let moves = game.get_all_valid_moves();
-    println!("Posible moves:");
-    for (i, mov) in moves.iter().enumerate() {
-        println!("{}: {} - {} -> {}", i+1, mov, game.get_square(mov.from), game.get_square(mov.to));
-    };
+#[derive(Debug, Clone, Copy)]
+pub struct ValuedMove {
+    value: Option<i32>,
+    mov: Move,
+}
 
-    let mut best_mov: Move = *moves.iter().nth(0).unwrap();
-    let mut best_val: i32 = game.evaluate_move(&best_mov);
-    for mov in moves.iter() {
-        let value = game.evaluate_move(mov);
-        println!("{} ?? {}", best_val, value);
-        if best_val > value {
-            println!("Found new best");
-            best_mov = *mov;
-            best_val = value;
+impl ValuedMove {
+    pub fn is_valued(&self) -> bool {
+        self.value.is_some()
+    }
+    pub fn from_move(mov: Move) -> ValuedMove {
+        ValuedMove { mov: mov, value: None }
+    }
+    pub fn new(from: Position, to: Position, movetype: MoveType) -> ValuedMove {
+        ValuedMove {
+            mov: Move {
+                from: from,
+                to:   to,
+                tipo: movetype,
+            },
+            value: None
         }
+    }
+    pub fn empty() -> ValuedMove {
+        ValuedMove {
+            mov: Move {
+                from: Position::safe_from_chars('a','1'),
+                to:   Position::safe_from_chars('a','2'),
+                tipo: MoveType::Normal,
+            },
+            value: None
+        }
+    }
+}
+
+impl Ord for ValuedMove {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.value.cmp(&other.value)
+    }
+}
+impl PartialOrd for ValuedMove {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (self.value, other.value) {
+            (None, None) => None,
+            (None, Some(_)) => Some(Ordering::Less),
+            (Some(_), None) => Some(Ordering::Greater),
+            (Some(me), Some(you)) => Some(me.cmp(&you)),
+        }
+    }
+}
+impl PartialEq for ValuedMove {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+impl Eq for ValuedMove { }
+
+#[test]
+fn test_partialOrd() {
+    let mut big = ValuedMove::empty();
+    let mut small = ValuedMove::empty();
+    assert_eq!(big, small);
+    big.value = Some(10);
+    assert!(big > small);
+    assert!(small < big);
+    small.value = Some(1);
+    assert!(big > small);
+    assert!(small < big);
+}
+
+pub fn get_move(game: &Game) -> Move {
+    get_best_move(game, 1, 1)
+}
+
+pub fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move {
+    let mut moves = game.get_all_valid_moves();
+    game.evaluate_moves(&mut moves);
+    let mov: ValuedMove = match game.turn {
+        White => *moves.iter().max().unwrap(),
+        Black => *moves.iter().min().unwrap(),
     };
-    best_mov
+    println!("My move will be {}", mov.mov);
+    mov.mov
+
 }
 
 impl Game {
@@ -42,15 +109,26 @@ impl Game {
     }
     pub fn evaluate_move(&self, mov: &Move) -> i32 {
         let mut aux_game = (*self).clone();
-        aux_game.make_move(mov);
+        if let Err(e) = aux_game.make_move(mov) {
+            println!("ERROR mov: {}, reason: {}", mov, e)
+        }
         aux_game.evaluate()
     }
-    pub fn get_valid_moves(&self, from_pos: Position) -> LinkedList<Move> {
+    pub fn evaluate_moves<'a>(&'a self, moves: &'a mut LinkedList<ValuedMove>) -> &'a mut LinkedList<ValuedMove> {
+        for mov in moves.iter_mut() {
+            if mov.value.is_none() {
+                mov.value = Some(self.evaluate_move(&mov.mov))
+            } else {
+                panic!("tried to value an already valued move")
+            }
+        }
+        moves
+    }
+    pub fn get_valid_moves(&self, from_pos: Position) -> LinkedList<ValuedMove> {
         let mut moves = LinkedList::new();
         let piece = match self.get_raw_square(from_pos) {
-            None => return moves,
-            Some(Square { content: None }) => return moves,
             Some(Square { content: Some(piece)}) => piece,
+            _ => return moves,
         };
         match piece {
             piece!(color, King)   => {
@@ -66,7 +144,7 @@ impl Game {
                                             ].iter() {
                     if let Some(to_square) = self.get_raw_square(*to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(Move::new(from_pos, *to_pos, MoveType::Normal));
+                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
                         }
                     }
                 }
@@ -76,11 +154,18 @@ impl Game {
                         Direction::Up, Direction::Down,
                         Direction::Left, Direction::Right,
                         Direction::UpRight, Direction::UpLeft,
-                        Direction::DownRight, Direction::DownLeft].iter(){
+                        Direction::DownRight, Direction::DownLeft
+                        ].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
-                            Some(to_square) if ! to_square.has_color(color) => {
-                                moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal));
+                            Some(Square {content: Some(piece!(to_color, _))}) => {
+                                if color != to_color {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                }
+                                break
+                            },
+                            Some(Square {content: None }) => {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -91,8 +176,14 @@ impl Game {
                 for dir in [Direction::Up, Direction::Down, Direction::Left, Direction::Right].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
-                            Some(to_square) if ! to_square.has_color(color) => {
-                                moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal));
+                            Some(Square {content: Some(piece!(to_color, _))}) => {
+                                if color != to_color {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                }
+                                break
+                            },
+                            Some(Square {content: None }) => {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -105,8 +196,14 @@ impl Game {
                         Direction::DownRight, Direction::DownLeft].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
-                            Some(to_square) if ! to_square.has_color(color) => {
-                                moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal));
+                            Some(Square {content: Some(piece!(to_color, _))}) => {
+                                if color != to_color {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                }
+                                break
+                            },
+                            Some(Square {content: None }) => {
+                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -124,7 +221,7 @@ impl Game {
                                 from_pos.left()  .left()  .down()].iter() {
                     if let Some(to_square) = self.get_raw_square(*to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(Move::new(from_pos, *to_pos, MoveType::Normal));
+                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
                         }
                     }
                 }
@@ -139,11 +236,11 @@ impl Game {
                         if to_square.has_black() {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(Move::new(from_pos, *to_pos,
+                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
                                         MoveType::Promotion(*promotion_piece)));
                                 }
                             } else {
-                                moves.push_back(Move::new(from_pos, *to_pos, MoveType::Normal))
+                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
                             }
                         }
                     }
@@ -153,16 +250,16 @@ impl Game {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
                             for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(Move::new(from_pos, to_pos,
+                                moves.push_back(ValuedMove::new(from_pos, to_pos,
                                     MoveType::Promotion(*promotion_piece)));
                             }
                         } else {
-                            moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal))
+                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
                         }
                         let to_pos = to_pos.up(); // TODO Much nest
                         if let Some(to_square) = self.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal));
+                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             }
                         }
                     }
@@ -178,11 +275,11 @@ impl Game {
                         if to_square.has_white() {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(Move::new(from_pos, *to_pos,
+                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
                                         MoveType::Promotion(*promotion_piece)));
                                 }
                             } else {
-                                moves.push_back(Move::new(from_pos, *to_pos, MoveType::Normal))
+                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
                             }
                         }
                     }
@@ -192,16 +289,16 @@ impl Game {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
                             for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(Move::new(from_pos, to_pos,
+                                moves.push_back(ValuedMove::new(from_pos, to_pos,
                                     MoveType::Promotion(*promotion_piece)));
                             }
                         } else {
-                            moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal))
+                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
                         }
                         let to_pos = to_pos.down(); // TODO Much nest
                         if let Some(to_square) = self.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(Move::new(from_pos, to_pos, MoveType::Normal));
+                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             }
                         }
                     }
@@ -210,7 +307,7 @@ impl Game {
         };
         moves
     }
-    pub fn get_all_valid_moves(&self) -> LinkedList<Move> {
+    pub fn get_all_valid_moves(&self) -> LinkedList<ValuedMove> {
         let mut moves = LinkedList::new();
         for from_pos in Position::all() {
             if !  self.get_square(from_pos).has_color(self.turn) {
