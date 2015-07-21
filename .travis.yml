@@ -1,2 +1,2 @@
 language: rust
-rust: stable # or nightly
+rust: nightly # or stable
