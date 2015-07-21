@@ -169,7 +169,7 @@ impl Game {
                 let col = self.turn;
                 try!(self.is_valid_normal_move(m));
                 try!(self.raw_make_move(m)); // BEWARE: This changes the color
-                try!(self.set_square(m.to, Some(Piece::new(pt, col))));
+                try!(self.set_square(m.to, Some(Piece::new(col, pt))));
                 Ok(())
             },
             MoveType::LongCastling => { match self.turn {
@@ -733,7 +733,7 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(t: PieceType, c: Color) -> Piece {
+    pub fn new(c: Color, t: PieceType) -> Piece {
         Piece {
             tipo: t,
             color: c,
