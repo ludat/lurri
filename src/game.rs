@@ -1,5 +1,13 @@
+#![allow(dead_code)]
 use std::fmt;
+use std::cmp;
+use std::collections::{LinkedList};
+use std::cmp::{Ord, Eq, PartialOrd, Ordering};
 use std::ops::Not;
+
+use std::ops::Add;
+
+extern crate bit_vec;
 
 #[macro_export]
 macro_rules! piece(
