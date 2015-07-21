@@ -481,8 +481,9 @@ impl Game {
         Ok(())
     }
     pub fn raw_move(&mut self, m: &Move) -> Result<(), &'static str> {
-        self.board[m.to.y][m.to.x] = self.board[m.from.y][m.from.x];
-        self.board[m.from.y][m.from.x] = Some(Square::empty());
+        let from_piece = self.get_piece(m.from);
+        try!(self.set_square(m.to,   from_piece));
+        try!(self.set_square(m.from, None));
         Ok(())
     }
     pub fn get_all_valid_moves(&self) -> LinkedList<ValuedMove> {
