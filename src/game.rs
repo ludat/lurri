@@ -987,6 +987,7 @@ pub struct Position {
     pub y: Y,
 }
 
+use self::Direction::{Up, Down, Left, Right, UpRight, UpLeft, DownRight, DownLeft};
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Direction {
     Up,
@@ -997,6 +998,21 @@ pub enum Direction {
     UpLeft,
     DownRight,
     DownLeft,
+}
+
+impl Direction {
+    pub fn to_int(&self) -> usize {
+        match *self {
+            Direction::Up => 0,
+            Direction::Down => 1,
+            Direction::Left => 2,
+            Direction::Right => 3,
+            Direction::UpRight => 4,
+            Direction::UpLeft => 5,
+            Direction::DownRight => 6,
+            Direction::DownLeft => 7,
+        }
+    }
 }
 
 impl Position {
