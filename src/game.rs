@@ -7,6 +7,9 @@ use std::ops::Not;
 
 use std::ops::Add;
 
+use std::sync::mpsc::{Sender, Receiver, channel};
+use std::thread;
+
 extern crate bit_vec;
 
 #[macro_export]
@@ -181,39 +184,39 @@ impl Game {
                 Ok(())
             },
             MoveType::LongCastling => { match self.turn {
-                    White => {
-                        let king_mov = Move::new(Position::safe_from_chars('e', '1'),
-                                Position::safe_from_chars('c', '1'), MoveType::Normal);
-                        let rook_mov = Move::new(Position::safe_from_chars('a', '1'),
-                                Position::safe_from_chars('d', '1'), MoveType::Normal);
+                White => {
+                    let king_mov = Move::new(Position::safe_from_chars('e', '1'),
+                    Position::safe_from_chars('c', '1'), MoveType::Normal);
+                    let rook_mov = Move::new(Position::safe_from_chars('a', '1'),
+                    Position::safe_from_chars('d', '1'), MoveType::Normal);
 
-                        if self.get_square(rook_mov.from) == Square::white_rook() &&
-                                self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
-                            try!(self.raw_move(&rook_mov));
-                            try!(self.raw_make_move(&king_mov));
-                            Ok(())
-                        } else {
-                            Err("Bad long casting")
-                        }
-                    },
-                    Black => {
-                        let king_mov = Move::new(Position::safe_from_chars('e', '8'),
-                                Position::safe_from_chars('c', '8'), MoveType::Normal);
-                        let rook_mov = Move::new(Position::safe_from_chars('a', '8'),
-                                Position::safe_from_chars('d', '8'), MoveType::Normal);
+                    if self.get_square(rook_mov.from) == Square::white_rook() &&
+                        self.get_square(king_mov.from) == Square::white_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
+                                try!(self.raw_move(&rook_mov));
+                                try!(self.raw_make_move(&king_mov));
+                                Ok(())
+                            } else {
+                                Err("Bad long casting")
+                            }
+                },
+                Black => {
+                    let king_mov = Move::new(Position::safe_from_chars('e', '8'),
+                    Position::safe_from_chars('c', '8'), MoveType::Normal);
+                    let rook_mov = Move::new(Position::safe_from_chars('a', '8'),
+                    Position::safe_from_chars('d', '8'), MoveType::Normal);
 
-                        if self.get_square(rook_mov.from) == Square::white_rook() &&
-                                self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
-                            try!(self.raw_move(&rook_mov));
-                            try!(self.raw_make_move(&king_mov));
-                            Ok(())
-                        } else {
-                            Err("Bad long casting")
-                        }
-                    },
-                }
+                    if self.get_square(rook_mov.from) == Square::white_rook() &&
+                        self.get_square(king_mov.from) == Square::white_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
+                                try!(self.raw_move(&rook_mov));
+                                try!(self.raw_make_move(&king_mov));
+                                Ok(())
+                            } else {
+                                Err("Bad long casting")
+                            }
+                },
+            }
             },
             MoveType::ShortCastling => match self.turn {
                 White => {
@@ -223,14 +226,14 @@ impl Game {
                             Position::safe_from_chars('f', '1'), MoveType::Normal);
 
                     if self.get_square(rook_mov.from) == Square::white_rook() &&
-                            self.get_square(king_mov.from) == Square::white_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
-                        try!(self.raw_move(&rook_mov));
-                        try!(self.raw_make_move(&king_mov));
-                        Ok(())
-                    } else {
-                        Err("Bad short casting")
-                    }
+                        self.get_square(king_mov.from) == Square::white_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
+                                try!(self.raw_move(&rook_mov));
+                                try!(self.raw_make_move(&king_mov));
+                                Ok(())
+                            } else {
+                                Err("Bad short casting")
+                            }
                 },
                 Black => {
                     let king_mov = Move::new(Position::safe_from_chars('e', '8'),
@@ -239,14 +242,14 @@ impl Game {
                             Position::safe_from_chars('f', '8'), MoveType::Normal);
 
                     if self.get_square(rook_mov.from) == Square::black_rook() &&
-                            self.get_square(king_mov.from) == Square::black_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
-                        try!(self.raw_move(&rook_mov));
-                        try!(self.raw_make_move(&king_mov));
-                        Ok(())
-                    } else {
-                        Err("Bad short casting")
-                    }
+                        self.get_square(king_mov.from) == Square::black_king() &&
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
+                                try!(self.raw_move(&rook_mov));
+                                try!(self.raw_make_move(&king_mov));
+                                Ok(())
+                            } else {
+                                Err("Bad short casting")
+                            }
                 },
             },
         }
@@ -274,120 +277,120 @@ impl Game {
                                 m.from.down().right()==m.to ||
                                 m.from.down().left()==m.to
                             ) &&
-                                ! to_square.has_color(color)
-                        {
-                            Ok(())
-                        } else {
-                            Err("Bad King movement")
-                        }
+                            ! to_square.has_color(color)
+                            {
+                                Ok(())
+                            } else {
+                                Err("Bad King movement")
+                            }
                     },
                     piece!(color, Queen) => {
                         if  (
-                                self.get_to_by(m, |p| p.up().right()) ||
-                                self.get_to_by(m, |p| p.up().left()) ||
-                                self.get_to_by(m, |p| p.down().right()) ||
-                                self.get_to_by(m, |p| p.down().left()) ||
-                                self.get_to_by(m, |p| p.up()) ||
-                                self.get_to_by(m, |p| p.down()) ||
-                                self.get_to_by(m, |p| p.right()) ||
-                                self.get_to_by(m, |p| p.left())
+                            self.get_to_by(m, Direction::Up) ||
+                            self.get_to_by(m, Direction::Down) ||
+                            self.get_to_by(m, Direction::Right) ||
+                            self.get_to_by(m, Direction::Left) ||
+                            self.get_to_by(m, Direction::UpRight) ||
+                            self.get_to_by(m, Direction::UpLeft) ||
+                            self.get_to_by(m, Direction::DownRight) ||
+                            self.get_to_by(m, Direction::DownLeft)
                             ) &&
-                                ! to_square.has_color(color)
+                            ! to_square.has_color(color)
                             {
-                            Ok(())
-                        } else {
-                            Err("Bad Queen movement")
-                        }
+                                Ok(())
+                            } else {
+                                Err("Bad Queen movement")
+                            }
                     },
                     piece!(color, Rook) => {
                         if  (
-                                self.get_to_by(m, |p| p.up()) ||
-                                self.get_to_by(m, |p| p.down()) ||
-                                self.get_to_by(m, |p| p.right()) ||
-                                self.get_to_by(m, |p| p.left())
+                            self.get_to_by(m, Direction::Up) ||
+                            self.get_to_by(m, Direction::Down) ||
+                            self.get_to_by(m, Direction::Right) ||
+                            self.get_to_by(m, Direction::Left)
                             ) &&
-                                ! to_square.has_color(color)
+                            ! to_square.has_color(color)
                             {
-                            Ok(())
-                        } else {
-                            Err("Bad Rook movement")
-                        }
+                                Ok(())
+                            } else {
+                                Err("Bad Rook movement")
+                            }
                     },
                     piece!(color, Bishop) => {
                         if  (
-                                self.get_to_by(m, |p| p.up().right()) ||
-                                self.get_to_by(m, |p| p.up().left()) ||
-                                self.get_to_by(m, |p| p.down().right()) ||
-                                self.get_to_by(m, |p| p.down().left())
+                            self.get_to_by(m, Direction::UpLeft) ||
+                            self.get_to_by(m, Direction::UpRight) ||
+                            self.get_to_by(m, Direction::DownRight) ||
+                            self.get_to_by(m, Direction::DownLeft)
                             ) &&
-                                ! to_square.has_color(color)
+                            ! to_square.has_color(color)
                             {
-                            Ok(())
-                        } else {
-                            Err("Bad Bishop movement")
-                        }
+                                Ok(())
+                            } else {
+                                Err("Bad Bishop movement")
+                            }
                     },
                     piece!(color, Knight) => {
                         if  (
-                                m.from.up().up().right()==m.to ||
-                                m.from.up().up().left()==m.to ||
-                                m.from.down().down().right()==m.to ||
-                                m.from.down().down().left()==m.to ||
-                                m.from.right().right().up()==m.to ||
-                                m.from.right().right().down()==m.to ||
-                                m.from.left().left().up()==m.to ||
-                                m.from.left().left().down()==m.to
+                            m.from.up().up().right()==m.to ||
+                            m.from.up().up().left()==m.to ||
+                            m.from.down().down().right()==m.to ||
+                            m.from.down().down().left()==m.to ||
+                            m.from.right().right().up()==m.to ||
+                            m.from.right().right().down()==m.to ||
+                            m.from.left().left().up()==m.to ||
+                            m.from.left().left().down()==m.to
                             ) &&
-                                ! to_square.has_color(color)
+                            ! to_square.has_color(color)
                             {
-                            Ok(())
-                        } else {
-                            Err("Bad Knight movement")
-                        }
+                                Ok(())
+                            } else {
+                                Err("Bad Knight movement")
+                            }
                     },
                     piece!(White, Pawn)   => {
                         if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
                             Err("You must promote that pawn")
                         } else if (
-                                m.from.y==Position::ch2y('2') &&
-                                m.from.up().up()==m.to &&
-                                to_square.has_none() &&
-                                self.get_to_by(m, |p| p.up())
+                            m.from.y==Position::ch2y('2') &&
+                            m.from.up().up()==m.to &&
+                            to_square.has_none() &&
+                            self.get_to_by(m, Direction::Up)
                             ) || (
                                 m.from.up()==m.to &&
                                 to_square.has_none()
-                            ) || (
-                                (
-                                    m.from.up().left()==m.to ||
-                                    m.from.up().right()==m.to
-                                ) && to_square.has_black()
-                            ) {
-                            Ok(())
-                        } else {
-                            Err("Bad pawn movement")
-                        }
+                                ) || (
+                                    (
+                                        m.from.up().left()==m.to ||
+                                        m.from.up().right()==m.to
+                                    ) && to_square.has_black()
+                                    ) {
+                                    Ok(())
+                                } else {
+                                    Err("Bad pawn movement")
+                                }
                     },
                     piece!(Black, Pawn)   => {
                         if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
                             Err("You must promote that pawn")
                         } else if (
-                                m.from.y==Position::ch2y('7') &&
-                                m.from.down().down()==m.to &&
-                                to_square.has_none() &&
-                                self.get_to_by(m, |p| p.down())
+                            m.from.y==Position::ch2y('7') &&
+                            m.from.down().down()==m.to &&
+                            to_square.has_none() &&
+                            self.get_to_by(m, Direction::Down)
                             ) || (
                                 m.from.down()==m.to &&
                                 to_square.has_none()
-                            ) || (
-                                (
-                                    m.from.down().left()==m.to ||
-                                    m.from.down().right()==m.to
-                                ) && to_square.has_white()
-                            ) {
-                            Ok(())
-                        } else {
-                            Err("Bad pawn movement")
-                        }
+                                ) || (
+                                    (
+                                        m.from.down().left()==m.to ||
+                                        m.from.down().right()==m.to
+                                    ) && to_square.has_white()
+                                    ) {
+                                    Ok(())
+                                } else {
+                                    Err("Bad pawn movement")
+                                }
                     },
                 }
             },
@@ -404,21 +407,26 @@ impl Game {
         try!(self.set_square(m.from, None));
         Ok(())
     }
-    pub fn get_all_valid_moves(&self) -> LinkedList<ValuedMove> {
-        let mut moves = LinkedList::new();
+    pub fn get_all_valid_moves(&self) -> Vec<ValuedMove> {
+        let mut moves = Vec::with_capacity(80);
         for from_pos in Position::all() {
             if !  self.get_square(from_pos).has_color(self.turn) {
                 continue
             };
-            moves.append(&mut self.get_valid_moves(from_pos));
+            for mov in self.iter_valid_moves(from_pos) {
+                moves.push(ValuedMove::from_move(mov));
+            }
         };
         moves
     }
-    pub fn get_valid_moves(&self, from_pos: Position) -> LinkedList<ValuedMove> {
-        let mut moves = LinkedList::new();
-        let piece = match self.get_raw_square(from_pos) {
+    pub fn iter_valid_moves(&self, from_pos: Position) -> Receiver<Move> {
+        let (tx, rx): (Sender<Move>, Receiver<Move>) = channel();
+        let game = self.clone();
+
+        thread::spawn(move || {
+        let piece = match game.get_raw_square(from_pos) {
             Some(Square { content: Some(piece)}) => piece,
-            _ => return moves,
+            _ => return,
         };
         match piece {
             piece!(color, King)   => {
@@ -432,30 +440,30 @@ impl Game {
                         from_pos.down().right(),
                         from_pos.down().left(),
                                             ].iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                    if let Some(to_square) = game.get_raw_square(*to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
+                            tx.send(Move::new(from_pos, *to_pos, MoveType::Normal));
                         }
                     }
                 }
             },
             piece!(color, Queen)  => {
                 for dir in [
-                        Direction::Up, Direction::Down,
-                        Direction::Left, Direction::Right,
-                        Direction::UpRight, Direction::UpLeft,
-                        Direction::DownRight, Direction::DownLeft
-                        ].iter(){
+                    Direction::Up, Direction::Down,
+                    Direction::Left, Direction::Right,
+                    Direction::UpRight, Direction::UpLeft,
+                    Direction::DownRight, Direction::DownLeft
+                ].iter(){
                     for to_pos in from_pos.iter_to(*dir){
-                        match self.get_raw_square(to_pos) {
+                        match game.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
                                 if color != to_color {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                    tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                                 }
                                 break
                             },
                             Some(Square {content: None }) => {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -465,15 +473,15 @@ impl Game {
             piece!(color, Rook)   => {
                 for dir in [Direction::Up, Direction::Down, Direction::Left, Direction::Right].iter(){
                     for to_pos in from_pos.iter_to(*dir){
-                        match self.get_raw_square(to_pos) {
+                        match game.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
                                 if color != to_color {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                    tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                                 }
                                 break
                             },
                             Some(Square {content: None }) => {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -482,36 +490,36 @@ impl Game {
             },
             piece!(color, Bishop) => {
                 for dir in [
-                        Direction::UpRight, Direction::UpLeft,
-                        Direction::DownRight, Direction::DownLeft].iter(){
-                    for to_pos in from_pos.iter_to(*dir){
-                        match self.get_raw_square(to_pos) {
-                            Some(Square {content: Some(piece!(to_color, _))}) => {
-                                if color != to_color {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
-                                }
-                                break
-                            },
-                            Some(Square {content: None }) => {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
-                            },
-                            _ => break,
+                    Direction::UpRight, Direction::UpLeft,
+                    Direction::DownRight, Direction::DownLeft].iter(){
+                        for to_pos in from_pos.iter_to(*dir){
+                            match game.get_raw_square(to_pos) {
+                                Some(Square {content: Some(piece!(to_color, _))}) => {
+                                    if color != to_color {
+                                        tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
+                                    }
+                                    break
+                                },
+                                Some(Square {content: None }) => {
+                                    tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
+                                },
+                                _ => break,
+                            }
                         }
                     }
-                }
             },
             piece!(color, Knight) => {
                 for to_pos in [ from_pos.up()    .up()    .right(),
-                                from_pos.up()    .up()    .left(),
-                                from_pos.down()  .down()  .right(),
-                                from_pos.down()  .down()  .left(),
-                                from_pos.right() .right() .up(),
-                                from_pos.right() .right() .down(),
-                                from_pos.left()  .left()  .up(),
-                                from_pos.left()  .left()  .down()].iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                from_pos.up()    .up()    .left(),
+                from_pos.down()  .down()  .right(),
+                from_pos.down()  .down()  .left(),
+                from_pos.right() .right() .up(),
+                from_pos.right() .right() .down(),
+                from_pos.left()  .left()  .up(),
+                from_pos.left()  .left()  .down()].iter() {
+                    if let Some(to_square) = game.get_raw_square(*to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
+                            tx.send(Move::new(from_pos, *to_pos, MoveType::Normal));
                         }
                     }
                 }
@@ -522,34 +530,34 @@ impl Game {
                 for to_pos in [ from_pos.up().left(),
                                 from_pos.up().right(),]
                                                 .iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                    if let Some(to_square) = game.get_raw_square(*to_pos) {
                         if to_square.has_black() {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
-                                        MoveType::Promotion(*promotion_piece)));
+                                    tx.send(Move::new(from_pos, *to_pos,
+                                                        MoveType::Promotion(*promotion_piece)));
                                 }
                             } else {
-                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
+                                tx.send(Move::new(from_pos, *to_pos, MoveType::Normal));
                             }
                         }
                     }
                 }
                 let to_pos = from_pos.up();
-                if let Some(to_square) = self.get_raw_square(to_pos) {
+                if let Some(to_square) = game.get_raw_square(to_pos) {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
                             for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos,
-                                    MoveType::Promotion(*promotion_piece)));
+                                tx.send(Move::new(from_pos, to_pos,
+                                                        MoveType::Promotion(*promotion_piece)));
                             }
                         } else {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
+                            tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                         }
                         let to_pos = to_pos.up(); // TODO Much nest
-                        if let Some(to_square) = self.get_raw_square(to_pos) {
+                        if let Some(to_square) = game.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                             }
                         }
                     }
@@ -559,43 +567,45 @@ impl Game {
                 let promotion_y = Position::ch2y('2');
                 let long_move_y = Position::ch2y('7');
                 for to_pos in [ from_pos.down().left(),
-                                from_pos.down().right(),]
-                                                .iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                from_pos.down().right(),]
+                .iter() {
+                    if let Some(to_square) = game.get_raw_square(*to_pos) {
                         if to_square.has_white() {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
-                                        MoveType::Promotion(*promotion_piece)));
+                                    tx.send(Move::new(from_pos, *to_pos,
+                                                        MoveType::Promotion(*promotion_piece)));
                                 }
                             } else {
-                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
+                                tx.send(Move::new(from_pos, *to_pos, MoveType::Normal));
                             }
                         }
                     }
                 }
                 let to_pos = from_pos.down();
-                if let Some(to_square) = self.get_raw_square(to_pos) {
+                if let Some(to_square) = game.get_raw_square(to_pos) {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
                             for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos,
-                                    MoveType::Promotion(*promotion_piece)));
+                                tx.send(Move::new(from_pos, to_pos,
+                                                    MoveType::Promotion(*promotion_piece)));
                             }
                         } else {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
+                            tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                         }
                         let to_pos = to_pos.down(); // TODO Much nest
-                        if let Some(to_square) = self.get_raw_square(to_pos) {
+                        if let Some(to_square) = game.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                tx.send(Move::new(from_pos, to_pos, MoveType::Normal));
                             }
                         }
                     }
                 }
             },
         };
-        moves
+        });
+
+        rx
     }
 }
 

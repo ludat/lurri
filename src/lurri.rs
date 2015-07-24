@@ -9,7 +9,7 @@ pub fn get_move(game: &Game) -> Move {
     get_best_move(game, 1, 1)
 }
 
-pub fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move {
+fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move {
     let mut moves = game.get_all_valid_moves();
     game.evaluate_moves(&mut moves);
     let mov: ValuedMove = match game.turn {
@@ -28,7 +28,9 @@ impl Game {
             match self.get_piece(pos) {
                 None => {},
                 Some(piece) => {
-                    sum += piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(pos).len() as i32)
+                    sum +=
+                        piece.get_value() * 10 +
+                        piece.color.get_sign() * (self.iter_valid_moves(pos).into_iter().count() as i32)
                 },
             }
         };
@@ -41,7 +43,7 @@ impl Game {
         }
         aux_game.evaluate()
     }
-    pub fn evaluate_moves<'a>(&'a self, moves: &'a mut LinkedList<ValuedMove>) -> &'a mut LinkedList<ValuedMove> {
+    pub fn evaluate_moves<'a>(&'a self, moves: &'a mut Vec<ValuedMove>) -> &'a mut Vec<ValuedMove> {
         for mov in moves.iter_mut() {
             if mov.value.is_none() {
                 mov.value = Some(self.evaluate_move(&mov.mov))
