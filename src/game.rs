@@ -137,19 +137,22 @@ impl Game {
         println!("{}", self)
     }
     pub fn get_raw_square(&self, pos: Position) -> Option<Square> {
-        self.board[pos.y][pos.x]
+        self.board[pos.y as usize][pos.x as usize]
     }
     pub fn get_square(&self, pos: Position) -> Square {
-        self.board[pos.y][pos.x].unwrap()
+        self.get_raw_square(pos).unwrap()
     }
     pub fn get_piece(&self, pos: Position) -> Option<Piece> {
         self.get_square(pos).content
     }
+    pub fn set_raw_square(&mut self, pos: Position, square: Option<Square>) -> Result<(), &'static str> {
+        Ok(self.board[pos.y as usize][pos.x as usize] = square)
+    }
     pub fn set_square(&mut self, pos: Position, piece: Option<Piece>) -> Result<(), &'static str> {
-        Ok(self.board[pos.y][pos.x] = Some(Square::new(piece)))
+        self.set_raw_square(pos, Some(Square::new(piece)))
     }
     pub fn is_square(&self, pos: Position) -> bool {
-        self.board[pos.y][pos.x].is_some()
+        self.get_raw_square(pos).is_some()
     }
     pub fn get_to_by(&self, mov: &Move, dir: Direction) -> bool {
         let mut p: Position = mov.from;
@@ -252,7 +255,7 @@ impl Game {
         }
     }
     pub fn is_valid_normal_move(&self, m: &Move) -> Result<(), &'static str> {
-        match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
+        match (self.get_raw_square(m.from), self.get_raw_square(m.to)) {
             (None, _)                       => Err("Not even a valid square"),
             (_, None)                       => Err("Not even a valid square"),
             (Some(Square {content: None}), _) => Err("Empty from square"),
@@ -1173,8 +1176,8 @@ fn test_valuedmove_partial_ord() {
     assert!(small < big);
 }
 
-pub type X = usize;
-pub type Y = usize;
+pub type X = i32;
+pub type Y = i64;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Position {
     pub x: X,
