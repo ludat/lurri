@@ -189,7 +189,7 @@ impl Game {
 
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
                             try!(self.raw_move(&rook_mov));
                             try!(self.raw_make_move(&king_mov));
                             Ok(())
@@ -205,7 +205,7 @@ impl Game {
 
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.left()) {
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
                             try!(self.raw_move(&rook_mov));
                             try!(self.raw_make_move(&king_mov));
                             Ok(())
@@ -224,7 +224,7 @@ impl Game {
 
                     if self.get_square(rook_mov.from) == Square::white_rook() &&
                             self.get_square(king_mov.from) == Square::white_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
                         try!(self.raw_move(&rook_mov));
                         try!(self.raw_make_move(&king_mov));
                         Ok(())
@@ -240,7 +240,7 @@ impl Game {
 
                     if self.get_square(rook_mov.from) == Square::black_rook() &&
                             self.get_square(king_mov.from) == Square::black_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), |p| p.right()) {
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
                         try!(self.raw_move(&rook_mov));
                         try!(self.raw_make_move(&king_mov));
                         Ok(())
@@ -283,14 +283,14 @@ impl Game {
                     },
                     piece!(color, Queen) => {
                         if  (
-                                self.get_to_by(m, |p| p.up().right()) ||
-                                self.get_to_by(m, |p| p.up().left()) ||
-                                self.get_to_by(m, |p| p.down().right()) ||
-                                self.get_to_by(m, |p| p.down().left()) ||
-                                self.get_to_by(m, |p| p.up()) ||
-                                self.get_to_by(m, |p| p.down()) ||
-                                self.get_to_by(m, |p| p.right()) ||
-                                self.get_to_by(m, |p| p.left())
+                                self.get_to_by(m, Direction::UpRight) ||
+                                self.get_to_by(m, Direction::UpLeft) ||
+                                self.get_to_by(m, Direction::DownRight) ||
+                                self.get_to_by(m, Direction::DownLeft) ||
+                                self.get_to_by(m, Direction::Up) ||
+                                self.get_to_by(m, Direction::Down) ||
+                                self.get_to_by(m, Direction::Right) ||
+                                self.get_to_by(m, Direction::Left)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -301,10 +301,10 @@ impl Game {
                     },
                     piece!(color, Rook) => {
                         if  (
-                                self.get_to_by(m, |p| p.up()) ||
-                                self.get_to_by(m, |p| p.down()) ||
-                                self.get_to_by(m, |p| p.right()) ||
-                                self.get_to_by(m, |p| p.left())
+                                self.get_to_by(m, Direction::Up) ||
+                                self.get_to_by(m, Direction::Down) ||
+                                self.get_to_by(m, Direction::Right) ||
+                                self.get_to_by(m, Direction::Left)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -315,10 +315,10 @@ impl Game {
                     },
                     piece!(color, Bishop) => {
                         if  (
-                                self.get_to_by(m, |p| p.up().right()) ||
-                                self.get_to_by(m, |p| p.up().left()) ||
-                                self.get_to_by(m, |p| p.down().right()) ||
-                                self.get_to_by(m, |p| p.down().left())
+                                self.get_to_by(m, Direction::UpRight) ||
+                                self.get_to_by(m, Direction::UpLeft) ||
+                                self.get_to_by(m, Direction::DownRight) ||
+                                self.get_to_by(m, Direction::DownLeft)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -352,7 +352,7 @@ impl Game {
                                 m.from.y==Position::ch2y('2') &&
                                 m.from.up().up()==m.to &&
                                 to_square.has_none() &&
-                                self.get_to_by(m, |p| p.up())
+                                self.get_to_by(m, Direction::Up)
                             ) || (
                                 m.from.up()==m.to &&
                                 to_square.has_none()
@@ -374,7 +374,7 @@ impl Game {
                                 m.from.y==Position::ch2y('7') &&
                                 m.from.down().down()==m.to &&
                                 to_square.has_none() &&
-                                self.get_to_by(m, |p| p.down())
+                                self.get_to_by(m, Direction::Down)
                             ) || (
                                 m.from.down()==m.to &&
                                 to_square.has_none()
