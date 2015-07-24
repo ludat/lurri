@@ -1,3 +1,4 @@
+#![feature(test)]
 use std::io;
 #[macro_use]
 mod game;

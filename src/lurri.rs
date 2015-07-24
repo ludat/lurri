@@ -4,6 +4,7 @@ use game::*;
 use game::Color::{White, Black};
 
 extern crate rand;
+extern crate test;
 
 pub fn get_move(game: &Game) -> Move {
     get_best_move(game, 1, 1)
@@ -16,7 +17,6 @@ pub fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move 
         White => *moves.iter().max().unwrap(),
         Black => *moves.iter().min().unwrap(),
     };
-    println!("My move will be {}", mov.mov);
     mov.mov
 
 }
@@ -57,4 +57,12 @@ impl Game {
 fn test_evaluate() {
     let game: Game = Game::new();
     assert_eq!(game.evaluate(), 0);
+}
+
+#[bench]
+fn bench_speed(b: &mut test::Bencher) {
+    let mut game: Game = Game::new();
+    b.iter(|| get_move(&game));
+    game.make_move(&Move::safe_from_string("e2e4"));
+    b.iter(|| get_move(&game));
 }
