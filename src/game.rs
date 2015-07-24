@@ -151,10 +151,10 @@ impl Game {
     pub fn is_square(&self, pos: Position) -> bool {
         self.board[pos.y][pos.x].is_some()
     }
-    pub fn get_to_by<F>(&self, mov: &Move, f: F) -> bool where F: Fn(&Position) -> Position {
+    pub fn get_to_by(&self, mov: &Move, dir: Direction) -> bool {
         let mut p: Position = mov.from;
         loop {
-            p = f(&p);
+            p = p.go(dir);
             if p == mov.to {
                 return true
             };
