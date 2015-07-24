@@ -252,8 +252,6 @@ impl Game {
         }
     }
     pub fn is_valid_normal_move(&self, m: &Move) -> Result<(), &'static str> {
-        // Option<{ content: Option<{ pieceType: PieceType, color: Color }> }>
-        println!("Making move {}...", m);
         match (self.board[m.from.y][m.from.x], self.board[m.to.y][m.to.x]) {
             (None, _)                       => Err("Not even a valid square"),
             (_, None)                       => Err("Not even a valid square"),
