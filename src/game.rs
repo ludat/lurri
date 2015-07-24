@@ -946,6 +946,12 @@ impl Square {
             _ => false,
         }
     }
+    pub fn contains(&self, piece: Piece) -> bool {
+        match *self {
+            Square { content: Some(p) } if p == piece => true,
+            _ => false,
+        }
+    }
 
     pub fn has_white(&self) -> bool {
         match *self {
