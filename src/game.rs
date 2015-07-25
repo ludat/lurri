@@ -3,9 +3,8 @@ use std::fmt;
 use std::cmp;
 use std::collections::{LinkedList};
 use std::cmp::{Ord, Eq, PartialOrd, Ordering};
-use std::ops::Not;
 
-use std::ops::Add;
+use std::ops::{Not, Add, Neg};
 
 extern crate bit_vec;
 
