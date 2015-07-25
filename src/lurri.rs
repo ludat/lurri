@@ -23,16 +23,13 @@ pub fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move 
 
 impl Game {
     pub fn evaluate(&self) -> i32 {
-        let mut sum = 0;
-        for pos in Position::all() {
-            match self.get_piece(pos) {
-                None => {},
-                Some(piece) => {
-                    sum += piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(pos).len() as i32)
-                },
+        Position::all().fold(0, |acc, val|
+            match self.get_piece(val) {
+                None => acc,
+                Some(piece) =>
+                    acc + piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(val).len() as i32),
             }
-        };
-        sum
+        )
     }
     pub fn evaluate_move(&self, mov: &Move) -> i32 {
         let mut aux_game = (*self).clone();
