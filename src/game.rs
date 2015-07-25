@@ -192,7 +192,7 @@ impl Game {
 
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Left) {
                             try!(self.raw_move(&rook_mov));
                             try!(self.raw_make_move(&king_mov));
                             Ok(())
@@ -208,7 +208,7 @@ impl Game {
 
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
-                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Left) {
+                                self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Left) {
                             try!(self.raw_move(&rook_mov));
                             try!(self.raw_make_move(&king_mov));
                             Ok(())
@@ -227,7 +227,7 @@ impl Game {
 
                     if self.get_square(rook_mov.from) == Square::white_rook() &&
                             self.get_square(king_mov.from) == Square::white_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Right) {
                         try!(self.raw_move(&rook_mov));
                         try!(self.raw_make_move(&king_mov));
                         Ok(())
@@ -243,7 +243,7 @@ impl Game {
 
                     if self.get_square(rook_mov.from) == Square::black_rook() &&
                             self.get_square(king_mov.from) == Square::black_king() &&
-                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Direction::Right) {
+                            self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Right) {
                         try!(self.raw_move(&rook_mov));
                         try!(self.raw_make_move(&king_mov));
                         Ok(())
@@ -284,14 +284,14 @@ impl Game {
                     },
                     piece!(color, Queen) => {
                         if  (
-                                self.get_to_by(m, Direction::UpRight) ||
-                                self.get_to_by(m, Direction::UpLeft) ||
-                                self.get_to_by(m, Direction::DownRight) ||
-                                self.get_to_by(m, Direction::DownLeft) ||
-                                self.get_to_by(m, Direction::Up) ||
-                                self.get_to_by(m, Direction::Down) ||
-                                self.get_to_by(m, Direction::Right) ||
-                                self.get_to_by(m, Direction::Left)
+                                self.get_to_by(m, UpRight) ||
+                                self.get_to_by(m, UpLeft) ||
+                                self.get_to_by(m, DownRight) ||
+                                self.get_to_by(m, DownLeft) ||
+                                self.get_to_by(m, Up) ||
+                                self.get_to_by(m, Down) ||
+                                self.get_to_by(m, Right) ||
+                                self.get_to_by(m, Left)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -302,10 +302,10 @@ impl Game {
                     },
                     piece!(color, Rook) => {
                         if  (
-                                self.get_to_by(m, Direction::Up) ||
-                                self.get_to_by(m, Direction::Down) ||
-                                self.get_to_by(m, Direction::Right) ||
-                                self.get_to_by(m, Direction::Left)
+                                self.get_to_by(m, Up) ||
+                                self.get_to_by(m, Down) ||
+                                self.get_to_by(m, Right) ||
+                                self.get_to_by(m, Left)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -316,10 +316,10 @@ impl Game {
                     },
                     piece!(color, Bishop) => {
                         if  (
-                                self.get_to_by(m, Direction::UpRight) ||
-                                self.get_to_by(m, Direction::UpLeft) ||
-                                self.get_to_by(m, Direction::DownRight) ||
-                                self.get_to_by(m, Direction::DownLeft)
+                                self.get_to_by(m, UpRight) ||
+                                self.get_to_by(m, UpLeft) ||
+                                self.get_to_by(m, DownRight) ||
+                                self.get_to_by(m, DownLeft)
                             ) &&
                                 ! to_square.has_color(color)
                             {
@@ -353,7 +353,7 @@ impl Game {
                                 m.from.y==Position::ch2y('2') &&
                                 m.from.up().up()==m.to &&
                                 to_square.has_none() &&
-                                self.get_to_by(m, Direction::Up)
+                                self.get_to_by(m, Up)
                             ) || (
                                 m.from.up()==m.to &&
                                 to_square.has_none()
@@ -375,7 +375,7 @@ impl Game {
                                 m.from.y==Position::ch2y('7') &&
                                 m.from.down().down()==m.to &&
                                 to_square.has_none() &&
-                                self.get_to_by(m, Direction::Down)
+                                self.get_to_by(m, Down)
                             ) || (
                                 m.from.down()==m.to &&
                                 to_square.has_none()
@@ -442,10 +442,10 @@ impl Game {
             },
             piece!(color, Queen)  => {
                 for dir in [
-                        Direction::Up, Direction::Down,
-                        Direction::Left, Direction::Right,
-                        Direction::UpRight, Direction::UpLeft,
-                        Direction::DownRight, Direction::DownLeft
+                        Up, Down,
+                        Left, Right,
+                        UpRight, UpLeft,
+                        DownRight, DownLeft
                         ].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
@@ -464,7 +464,7 @@ impl Game {
                 }
             },
             piece!(color, Rook)   => {
-                for dir in [Direction::Up, Direction::Down, Direction::Left, Direction::Right].iter(){
+                for dir in [Up, Down, Left, Right].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
@@ -483,8 +483,8 @@ impl Game {
             },
             piece!(color, Bishop) => {
                 for dir in [
-                        Direction::UpRight, Direction::UpLeft,
-                        Direction::DownRight, Direction::DownLeft].iter(){
+                        UpRight, UpLeft,
+                        DownRight, DownLeft].iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
@@ -1200,14 +1200,14 @@ pub enum Direction {
 impl Direction {
     pub fn to_int(&self) -> usize {
         match *self {
-            Direction::Up => 0,
-            Direction::Down => 1,
-            Direction::Left => 2,
-            Direction::Right => 3,
-            Direction::UpRight => 4,
-            Direction::UpLeft => 5,
-            Direction::DownRight => 6,
-            Direction::DownLeft => 7,
+            Up => 0,
+            Down => 1,
+            Left => 2,
+            Right => 3,
+            UpRight => 4,
+            UpLeft => 5,
+            DownRight => 6,
+            DownLeft => 7,
         }
     }
 }
@@ -1259,14 +1259,14 @@ impl Position {
     }
     pub fn go(&self, dir: Direction) -> Position {
         match dir {
-            Direction::Up        => self.up(),
-            Direction::Down      => self.down(),
-            Direction::Right     => self.right(),
-            Direction::Left      => self.left(),
-            Direction::UpRight   => self.up().right(),
-            Direction::UpLeft    => self.up().left(),
-            Direction::DownRight => self.down().right(),
-            Direction::DownLeft  => self.down().left(),
+            Up        => self.up(),
+            Down      => self.down(),
+            Right     => self.right(),
+            Left      => self.left(),
+            UpRight   => self.up().right(),
+            UpLeft    => self.up().left(),
+            DownRight => self.down().right(),
+            DownLeft  => self.down().left(),
         }
     }
     pub fn up(&self) -> Position {
@@ -1392,8 +1392,8 @@ fn move_position() {
     assert_eq!(Position::safe_from_chars('e','2').right(), Position::safe_from_chars('f','2'));
     assert_eq!(Position::safe_from_chars('e','2').left(), Position::safe_from_chars('d','2'));
 
-    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Up), Position::safe_from_chars('e','3'));
-    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Down), Position::safe_from_chars('e','1'));
-    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Right), Position::safe_from_chars('f','2'));
-    assert_eq!(Position::safe_from_chars('e','2').go(Direction::Left), Position::safe_from_chars('d','2'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Up), Position::safe_from_chars('e','3'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Down), Position::safe_from_chars('e','1'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Right), Position::safe_from_chars('f','2'));
+    assert_eq!(Position::safe_from_chars('e','2').go(Left), Position::safe_from_chars('d','2'));
 }
