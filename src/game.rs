@@ -8,6 +8,52 @@ use std::ops::{Not, Add, Neg};
 
 extern crate bit_vec;
 
+const KING_MOVES: [PositionDelta; 8] = [
+    PositionDelta { x:  1, y:  1},
+    PositionDelta { x:  1, y:  0},
+    PositionDelta { x:  1, y: -1},
+    PositionDelta { x: -1, y:  1},
+    PositionDelta { x: -1, y:  0},
+    PositionDelta { x: -1, y: -1},
+    PositionDelta { x:  0, y:  1},
+    PositionDelta { x:  0, y: -1},
+];
+const KNIGHT_MOVES: [PositionDelta; 8] = [
+    PositionDelta { x:  1, y:  2},
+    PositionDelta { x: -1, y:  2},
+    PositionDelta { x:  1, y: -2},
+    PositionDelta { x: -1, y: -2},
+    PositionDelta { x:  2, y:  1},
+    PositionDelta { x:  2, y: -1},
+    PositionDelta { x: -2, y:  1},
+    PositionDelta { x: -2, y: -1},
+];
+
+const QUEEN_DIRS: [Direction; 8] = [
+    Up,
+    Down,
+    Right,
+    Left,
+    UpRight,
+    UpLeft,
+    DownRight,
+    DownLeft,
+];
+
+const ROOK_DIRS: [Direction; 4] = [
+    Up,
+    Down,
+    Right,
+    Left,
+];
+
+const BISHOP_DIRS: [Direction; 4] = [
+    UpRight,
+    UpLeft,
+    DownRight,
+    DownLeft,
+];
+
 #[macro_export]
 macro_rules! piece(
     ($color:pat, $piece:pat) => (
