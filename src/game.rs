@@ -1342,6 +1342,86 @@ impl fmt::Display for Position {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct PositionDelta {
+    pub x: X,
+    pub y: Y,
+}
+
+impl PositionDelta {
+    pub fn new(x: X, y: Y) -> PositionDelta {
+        PositionDelta { x: x, y: y}
+    }
+    pub fn empty() -> PositionDelta {
+        PositionDelta { x: 0, y: 0}
+    }
+    pub fn from_dir(dir: Direction) -> PositionDelta {
+        match dir {
+            Up        => PositionDelta::new( 0, 1),
+            Down      => PositionDelta::new( 0,-1),
+            Right     => PositionDelta::new( 1, 0),
+            Left      => PositionDelta::new(-1, 0),
+
+            UpRight   => PositionDelta::new( 1, 1),
+            UpLeft    => PositionDelta::new(-1, 1),
+            DownRight => PositionDelta::new( 1,-1),
+            DownLeft  => PositionDelta::new(-1,-1),
+        }
+    }
+    pub fn from_dirs(dirs: &[Direction]) -> PositionDelta {
+        dirs.iter().fold(PositionDelta::empty(),
+            |pd, dir| pd + PositionDelta::from_dir(*dir))
+    }
+    pub fn apply_dir(&self, dir: Direction) -> PositionDelta {
+        *self + PositionDelta::from_dir(dir)
+    }
+    pub fn apply_dirs(&self, dirs: &[Direction]) -> PositionDelta {
+        *self + PositionDelta::from_dirs(dirs)
+    }
+    pub fn up(&self) -> PositionDelta {
+        PositionDelta { y: self.y + 1, .. *self }
+    }
+    pub fn down(&self) -> PositionDelta {
+        PositionDelta { y: self.y - 1, .. *self }
+    }
+    pub fn right(&self) -> PositionDelta {
+        PositionDelta { x: self.x + 1, .. *self }
+    }
+    pub fn left(&self) -> PositionDelta {
+        PositionDelta { x: self.x - 1, .. *self }
+    }
+}
+
+impl Add<PositionDelta> for PositionDelta {
+    type Output = PositionDelta;
+    fn add(self, rhs: PositionDelta) -> Self::Output {
+        PositionDelta { x: self.x + rhs.x, y: self.y + rhs.y}
+    }
+}
+
+impl Add<PositionDelta> for Position {
+    type Output = Position;
+    fn add(self, rhs: PositionDelta) -> Self::Output {
+        Position { x: self.x + rhs.x, y: self.y + rhs.y}
+    }
+}
+
+impl Neg for PositionDelta {
+    type Output = PositionDelta;
+    fn neg(self) -> Self::Output {
+        PositionDelta { x: -self.x, y: -self.y}
+    }
+}
+
+#[test]
+fn test_add_position_delta() {
+    assert_eq!(
+        Position::safe_from_chars('a','1') + PositionDelta::from_dirs(&[Up, Up]),
+        Position::safe_from_chars('a','3'));
+
+    assert_eq!(Position::safe_from_chars('a','1') + PositionDelta::from_dir(Right), Position::safe_from_chars('b','1'));
+}
+
 pub struct AllPositionsIterator {
     pub curr: Position,
 }
