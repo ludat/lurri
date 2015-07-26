@@ -572,6 +572,7 @@ impl Game {
 impl fmt::Display for Game {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "{} Plays\n", self.turn));
+        try!(write!(f, "    a b c d e f g h  \n"));
         try!(write!(f, "  +-----------------+\n"));
         for r in (2..10).rev() {
             try!(write!(f, "{} |", r-1));
@@ -581,7 +582,7 @@ impl fmt::Display for Game {
                     None => try!(write!(f, "")),
                 };
             }
-            try!(write!(f, " |\n"));
+            try!(write!(f, " | {}\n", r-1));
         };
         try!(write!(f, "  +-----------------+\n"));
         try!(write!(f, "    a b c d e f g h  \n"));
