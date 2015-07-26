@@ -468,30 +468,17 @@ impl Game {
         };
         match piece {
             piece!(color, King)   => {
-                for to_pos in [
-                        from_pos.up(),
-                        from_pos.down(),
-                        from_pos.right(),
-                        from_pos.left(),
-                        from_pos.up()  .right(),
-                        from_pos.up()  .left(),
-                        from_pos.down().right(),
-                        from_pos.down().left(),
-                                            ].iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                for delta_pos in KING_MOVES.iter() {
+                    let to_pos = from_pos + *delta_pos;
+                    if let Some(to_square) = self.get_raw_square(to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
+                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                         }
                     }
                 }
             },
             piece!(color, Queen)  => {
-                for dir in [
-                        Up, Down,
-                        Left, Right,
-                        UpRight, UpLeft,
-                        DownRight, DownLeft
-                        ].iter(){
+                for dir in QUEEN_DIRS.iter() {
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
@@ -509,7 +496,7 @@ impl Game {
                 }
             },
             piece!(color, Rook)   => {
-                for dir in [Up, Down, Left, Right].iter(){
+                for dir in ROOK_DIRS.iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
@@ -527,9 +514,7 @@ impl Game {
                 }
             },
             piece!(color, Bishop) => {
-                for dir in [
-                        UpRight, UpLeft,
-                        DownRight, DownLeft].iter(){
+                for dir in BISHOP_DIRS.iter(){
                     for to_pos in from_pos.iter_to(*dir){
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
@@ -547,17 +532,11 @@ impl Game {
                 }
             },
             piece!(color, Knight) => {
-                for to_pos in [ from_pos.up()    .up()    .right(),
-                                from_pos.up()    .up()    .left(),
-                                from_pos.down()  .down()  .right(),
-                                from_pos.down()  .down()  .left(),
-                                from_pos.right() .right() .up(),
-                                from_pos.right() .right() .down(),
-                                from_pos.left()  .left()  .up(),
-                                from_pos.left()  .left()  .down()].iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
+                for delta_pos in KNIGHT_MOVES.iter() {
+                    let to_pos = from_pos + *delta_pos;
+                    if let Some(to_square) = self.get_raw_square(to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal));
+                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                         }
                     }
                 }
