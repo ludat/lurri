@@ -391,44 +391,26 @@ impl Game {
                             Err("Bad Knight movement")
                         }
                     },
-                    piece!(White, Pawn)   => {
-                        if m.from.y==Position::ch2y('7') && ! m.is_promotion() {
+                    piece!(color, Pawn)   => {
+                        let (promotion_y, long_move_y, foward_dir) = match color {
+                            White => (Position::ch2y('7'), Position::ch2y('2'), Up),
+                            Black => (Position::ch2y('2'), Position::ch2y('7'), Down),
+                        };
+                        if m.from.y==promotion_y && ! m.is_promotion() {
                             Err("You must promote that pawn")
                         } else if (
-                                m.from.y==Position::ch2y('2') &&
-                                m.from.up().up()==m.to &&
+                                m.from.y==long_move_y &&
+                                m.from.go(foward_dir).go(foward_dir)==m.to &&
                                 to_square.has_none() &&
-                                self.get_to_by(m, Up)
+                                self.get_to_by(m, foward_dir)
                             ) || (
-                                m.from.up()==m.to &&
+                                m.from.go(foward_dir)==m.to &&
                                 to_square.has_none()
                             ) || (
                                 (
-                                    m.from.up().left()==m.to ||
-                                    m.from.up().right()==m.to
-                                ) && to_square.has_black()
-                            ) {
-                            Ok(())
-                        } else {
-                            Err("Bad pawn movement")
-                        }
-                    },
-                    piece!(Black, Pawn)   => {
-                        if m.from.y==Position::ch2y('2') && ! m.is_promotion() {
-                            Err("You must promote that pawn")
-                        } else if (
-                                m.from.y==Position::ch2y('7') &&
-                                m.from.down().down()==m.to &&
-                                to_square.has_none() &&
-                                self.get_to_by(m, Down)
-                            ) || (
-                                m.from.down()==m.to &&
-                                to_square.has_none()
-                            ) || (
-                                (
-                                    m.from.down().left()==m.to ||
-                                    m.from.down().right()==m.to
-                                ) && to_square.has_white()
+                                    m.from.go(foward_dir).left()==m.to ||
+                                    m.from.go(foward_dir).right()==m.to
+                                ) && to_square.has_color(!color)
                             ) {
                             Ok(())
                         } else {
@@ -541,14 +523,16 @@ impl Game {
                     }
                 }
             },
-            piece!(White, Pawn)   => {
-                let promotion_y = Position::ch2y('7');
-                let long_move_y = Position::ch2y('2');
-                for to_pos in [ from_pos.up().left(),
-                                from_pos.up().right(),]
+            piece!(color, Pawn)   => {
+                let (promotion_y, long_move_y, foward_dir) = match color {
+                    White => (Position::ch2y('7'), Position::ch2y('2'), Up),
+                    Black => (Position::ch2y('2'), Position::ch2y('7'), Down),
+                };
+                for to_pos in [ from_pos.go(foward_dir).left(),
+                                from_pos.go(foward_dir).right(),]
                                                 .iter() {
                     if let Some(to_square) = self.get_raw_square(*to_pos) {
-                        if to_square.has_black() {
+                        if to_square.has_color(!color) {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
                                     moves.push_back(ValuedMove::new(from_pos, *to_pos,
@@ -560,7 +544,7 @@ impl Game {
                         }
                     }
                 }
-                let to_pos = from_pos.up();
+                let to_pos = from_pos.go(foward_dir);
                 if let Some(to_square) = self.get_raw_square(to_pos) {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
@@ -571,46 +555,7 @@ impl Game {
                         } else {
                             moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
                         }
-                        let to_pos = to_pos.up(); // TODO Much nest
-                        if let Some(to_square) = self.get_raw_square(to_pos) {
-                            if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
-                            }
-                        }
-                    }
-                }
-            },
-            piece!(Black, Pawn)   => {
-                let promotion_y = Position::ch2y('2');
-                let long_move_y = Position::ch2y('7');
-                for to_pos in [ from_pos.down().left(),
-                                from_pos.down().right(),]
-                                                .iter() {
-                    if let Some(to_square) = self.get_raw_square(*to_pos) {
-                        if to_square.has_white() {
-                            if from_pos.y==promotion_y {
-                                for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
-                                        MoveType::Promotion(*promotion_piece)));
-                                }
-                            } else {
-                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
-                            }
-                        }
-                    }
-                }
-                let to_pos = from_pos.down();
-                if let Some(to_square) = self.get_raw_square(to_pos) {
-                    if to_square.has_none() {
-                        if from_pos.y==promotion_y {
-                            for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos,
-                                    MoveType::Promotion(*promotion_piece)));
-                            }
-                        } else {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
-                        }
-                        let to_pos = to_pos.down(); // TODO Much nest
+                        let to_pos = to_pos.go(foward_dir);
                         if let Some(to_square) = self.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
                                 moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
