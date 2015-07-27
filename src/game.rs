@@ -8,6 +8,8 @@ use std::ops::{Not, Add, Neg};
 
 extern crate bit_vec;
 
+const BASE_MOVEMENT_CAPACITY: usize = 80;
+
 const KING_DELTAS: &'static [PositionDelta; 8] = &[
     PositionDelta { x:  1, y:  1},
     PositionDelta { x:  1, y:  0},
