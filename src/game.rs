@@ -7,8 +7,9 @@ use std::cmp::{Ord, Eq, PartialOrd, Ordering};
 use std::ops::{Not, Add, Neg};
 
 extern crate bit_vec;
+extern crate test;
 
-const KING_MOVES: [PositionDelta; 8] = [
+const KING_DELTAS: &'static [PositionDelta; 8] = &[
     PositionDelta { x:  1, y:  1},
     PositionDelta { x:  1, y:  0},
     PositionDelta { x:  1, y: -1},
@@ -18,7 +19,7 @@ const KING_MOVES: [PositionDelta; 8] = [
     PositionDelta { x:  0, y:  1},
     PositionDelta { x:  0, y: -1},
 ];
-const KNIGHT_MOVES: [PositionDelta; 8] = [
+const KNIGHT_DELTAS: &'static [PositionDelta; 8] = &[
     PositionDelta { x:  1, y:  2},
     PositionDelta { x: -1, y:  2},
     PositionDelta { x:  1, y: -2},
@@ -29,7 +30,7 @@ const KNIGHT_MOVES: [PositionDelta; 8] = [
     PositionDelta { x: -2, y: -1},
 ];
 
-const QUEEN_DIRS: [Direction; 8] = [
+const QUEEN_DIRS: &'static [Direction; 8] = &[
     Up,
     Down,
     Right,
@@ -40,14 +41,14 @@ const QUEEN_DIRS: [Direction; 8] = [
     DownLeft,
 ];
 
-const ROOK_DIRS: [Direction; 4] = [
+const ROOK_DIRS: &'static [Direction; 4] = &[
     Up,
     Down,
     Right,
     Left,
 ];
 
-const BISHOP_DIRS: [Direction; 4] = [
+const BISHOP_DIRS: &'static [Direction; 4] = &[
     UpRight,
     UpLeft,
     DownRight,
@@ -449,8 +450,8 @@ impl Game {
             _ => return moves,
         };
         match piece {
-            piece!(color, King)   => {
-                for delta_pos in KING_MOVES.iter() {
+            piece!(color, pt @ King) | piece!(color, pt @ Knight) => {
+                for delta_pos in pt.get_posible_deltas().iter() {
                     let to_pos = from_pos + *delta_pos;
                     if let Some(to_square) = self.get_raw_square(to_pos) {
                         if ! to_square.has_color(color) {
@@ -509,16 +510,6 @@ impl Game {
                                     moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
-                        }
-                    }
-                }
-            },
-            piece!(color, Knight) => {
-                for delta_pos in KNIGHT_MOVES.iter() {
-                    let to_pos = from_pos + *delta_pos;
-                    if let Some(to_square) = self.get_raw_square(to_pos) {
-                        if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                         }
                     }
                 }
@@ -588,6 +579,13 @@ impl fmt::Display for Game {
         try!(write!(f, "    a b c d e f g h  \n"));
         Ok(())
     }
+}
+
+#[bench]
+fn bench_is_valid(b: &mut test::Bencher) {
+    let mut game: Game = Game::new();
+    // b.iter(|| game.make_move(&Move::safe_from_string("e2e4")));
+    b.iter(|| game.make_move(&Move::safe_from_string("a1e4")));
 }
 
 #[test]
@@ -789,6 +787,22 @@ impl PieceType {
             Bishop => 3,
             Knight => 3,
             Pawn   => 1,
+        }
+    }
+
+    pub fn get_posible_dirs(&self) -> &'static [Direction] {
+        match *self {
+            Queen => QUEEN_DIRS,
+            Rook => ROOK_DIRS,
+            Bishop => BISHOP_DIRS,
+            _ => unreachable!("Asked posible directions of a piece that doesn't have posible directions"),
+        }
+    }
+    pub fn get_posible_deltas(&self) -> &'static [PositionDelta] {
+        match *self {
+            King => KING_DELTAS,
+            Knight => KNIGHT_DELTAS,
+            _ => unreachable!("Asked posible positions of a piece that doesn't have defined positions"),
         }
     }
 }
