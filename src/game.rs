@@ -432,18 +432,16 @@ impl Game {
         try!(self.set_square(m.from, None));
         Ok(())
     }
-    pub fn get_all_valid_moves(&self) -> LinkedList<ValuedMove> {
-        let mut moves = LinkedList::new();
+    pub fn get_all_valid_moves(&self) -> Vec<ValuedMove> {
+        let mut moves = Vec::with_capacity(BASE_MOVEMENT_CAPACITY);
         for from_pos in Position::all() {
-            if !  self.get_square(from_pos).has_color(self.turn) {
-                continue
+            if self.get_square(from_pos).has_color(self.turn) {
+                self.get_valid_moves(from_pos, &mut moves);
             };
-            moves.append(&mut self.get_valid_moves(from_pos));
         };
         moves
     }
-    pub fn get_valid_moves(&self, from_pos: Position) -> LinkedList<ValuedMove> {
-        let mut moves = LinkedList::new();
+    pub fn get_valid_moves<'a>(&self, from_pos: Position, moves: &'a mut Vec<ValuedMove>) -> &'a mut Vec<ValuedMove> {
         let piece = match self.get_raw_square(from_pos) {
             Some(Square { content: Some(piece)}) => piece,
             _ => return moves,
@@ -455,7 +453,7 @@ impl Game {
                     let to_pos = from_pos + *delta_pos;
                     if let Some(to_square) = self.get_raw_square(to_pos) {
                         if ! to_square.has_color(color) {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                            moves.push(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                         }
                     }
                 }
@@ -468,12 +466,12 @@ impl Game {
                         match self.get_raw_square(to_pos) {
                             Some(Square {content: Some(piece!(to_color, _))}) => {
                                 if color != to_color {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                    moves.push(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                                 }
                                 break
                             },
                             Some(Square {content: None }) => {
-                                    moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                    moves.push(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             },
                             _ => break,
                         }
@@ -492,11 +490,11 @@ impl Game {
                         if to_square.has_color(!color) {
                             if from_pos.y==promotion_y {
                                 for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                    moves.push_back(ValuedMove::new(from_pos, *to_pos,
+                                    moves.push(ValuedMove::new(from_pos, *to_pos,
                                         MoveType::Promotion(*promotion_piece)));
                                 }
                             } else {
-                                moves.push_back(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
+                                moves.push(ValuedMove::new(from_pos, *to_pos, MoveType::Normal))
                             }
                         }
                     }
@@ -506,16 +504,16 @@ impl Game {
                     if to_square.has_none() {
                         if from_pos.y==promotion_y {
                             for promotion_piece in [Queen, Rook, Bishop, Knight].iter() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos,
+                                moves.push(ValuedMove::new(from_pos, to_pos,
                                     MoveType::Promotion(*promotion_piece)));
                             }
                         } else {
-                            moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
+                            moves.push(ValuedMove::new(from_pos, to_pos, MoveType::Normal))
                         }
                         let to_pos = to_pos.go(foward_dir);
                         if let Some(to_square) = self.get_raw_square(to_pos) {
                             if from_pos.y == long_move_y && to_square.has_none() {
-                                moves.push_back(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
+                                moves.push(ValuedMove::new(from_pos, to_pos, MoveType::Normal));
                             }
                         }
                     }

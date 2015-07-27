@@ -23,11 +23,14 @@ pub fn get_best_move(game: &Game, final_depth: u32, current_depth: u32) -> Move 
 
 impl Game {
     pub fn evaluate(&self) -> i32 {
-        Position::all().fold(0, |acc, val|
-            match self.get_piece(val) {
+        let mut moves = Vec::with_capacity(80);
+        Position::all().fold(0, |acc, pos|
+            match self.get_piece(pos) {
                 None => acc,
-                Some(piece) =>
-                    acc + piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(val).len() as i32),
+                Some(piece) => {
+                    moves.clear();
+                    acc + piece.get_value() * 10 + piece.color.get_sign() * (self.get_valid_moves(pos, &mut moves).len() as i32)
+                },
             }
         )
     }
@@ -38,7 +41,7 @@ impl Game {
         }
         aux_game.evaluate()
     }
-    pub fn evaluate_moves<'a>(&'a self, moves: &'a mut LinkedList<ValuedMove>) -> &'a mut LinkedList<ValuedMove> {
+    pub fn evaluate_moves<'a>(&self, moves: &'a mut Vec<ValuedMove>) -> &'a mut Vec<ValuedMove> {
         for mov in moves.iter_mut() {
             if mov.value.is_none() {
                 mov.value = Some(self.evaluate_move(&mov.mov))
