@@ -7,8 +7,9 @@ use std::cmp::{Ord, Eq, PartialOrd, Ordering};
 use std::ops::{Not, Add, Neg};
 
 extern crate bit_vec;
+extern crate test;
 
-const BASE_MOVEMENT_CAPACITY: usize = 80;
+const BASE_MOVEMENT_CAPACITY: usize = 100;
 
 const KING_DELTAS: &'static [PositionDelta; 8] = &[
     PositionDelta { x:  1, y:  1},
@@ -224,10 +225,10 @@ impl Game {
                 Ok(())
             },
             MoveType::Promotion (pt) => {
-                let col = self.turn;
+                let color = self.turn;
                 try!(self.is_valid_normal_move(m));
                 try!(self.raw_make_move(m)); // BEWARE: This changes the color
-                try!(self.set_square(m.to, Some(Piece::new(col, pt))));
+                try!(self.set_square(m.to, Some(Piece::new(color, pt))));
                 Ok(())
             },
             MoveType::LongCastling => { match self.turn {
@@ -236,7 +237,6 @@ impl Game {
                                 Position::safe_from_chars('c', '1'), MoveType::Normal);
                         let rook_mov = Move::new(Position::safe_from_chars('a', '1'),
                                 Position::safe_from_chars('d', '1'), MoveType::Normal);
-
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
                                 self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Left) {
@@ -252,7 +252,6 @@ impl Game {
                                 Position::safe_from_chars('c', '8'), MoveType::Normal);
                         let rook_mov = Move::new(Position::safe_from_chars('a', '8'),
                                 Position::safe_from_chars('d', '8'), MoveType::Normal);
-
                         if self.get_square(rook_mov.from) == Square::white_rook() &&
                                 self.get_square(king_mov.from) == Square::white_king() &&
                                 self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Left) {
@@ -271,7 +270,6 @@ impl Game {
                             Position::safe_from_chars('g', '1'), MoveType::Normal);
                     let rook_mov = Move::new(Position::safe_from_chars('h', '1'),
                             Position::safe_from_chars('f', '1'), MoveType::Normal);
-
                     if self.get_square(rook_mov.from) == Square::white_rook() &&
                             self.get_square(king_mov.from) == Square::white_king() &&
                             self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Right) {
@@ -287,7 +285,6 @@ impl Game {
                             Position::safe_from_chars('g', '8'), MoveType::Normal);
                     let rook_mov = Move::new(Position::safe_from_chars('h', '8'),
                             Position::safe_from_chars('f', '8'), MoveType::Normal);
-
                     if self.get_square(rook_mov.from) == Square::black_rook() &&
                             self.get_square(king_mov.from) == Square::black_king() &&
                             self.get_to_by(&Move::new(king_mov.from, rook_mov.from, MoveType::Normal), Right) {
@@ -424,6 +421,12 @@ impl Game {
         }
     }
     pub fn raw_make_move(&mut self, m: &Move) -> Result<(), &'static str> {
+        let mut aux = self.clone();
+        try!(aux.raw_move(m));
+        aux.turn = !aux.turn;
+        if aux.can_eat_king() {
+            return Err("The king can be eaten after that move")
+        }
         try!(self.raw_move(m));
         self.turn = !self.turn;
         Ok(())
@@ -524,6 +527,65 @@ impl Game {
         };
         moves
     }
+    pub fn can_be_eaten_by(&self, from_pos: Position, color: Color) -> bool {
+        for &pt in [King, Queen, Rook, Bishop, Knight, Pawn].iter() {
+            match pt {
+                King | Knight => {
+                    for delta_pos in pt.get_posible_deltas().iter() {
+                        let to_pos = from_pos + *delta_pos;
+                        if let Some(to_square) = self.get_raw_square(to_pos) {
+                            if to_square.contains(Piece::new(color, pt)) {
+                                return true
+                            }
+                        }
+                    }
+                },
+            Rook | Bishop | Queen => {
+                for dir in pt.get_posible_dirs().iter() {
+                    for to_pos in from_pos.iter_to(*dir){
+                        if let Some(to_square) = self.get_raw_square(to_pos) {
+                            if to_square.contains(Piece::new(color, pt)) {
+                                return true
+                            } else if to_square.has_none() {
+                                continue
+                            } else {
+                                break
+                            }
+                        } else {
+                            break
+                        }
+                    }
+                }
+            },
+            Pawn => {
+                let backward_dir = match color {
+                    White => Down,
+                    Black => Up,
+                };
+                for &to_pos in [ from_pos.go(backward_dir).left(),
+                                from_pos.go(backward_dir).right(),]
+                                                .iter() {
+                    if let Some(to_square) = self.get_raw_square(to_pos) {
+                        if to_square.contains(Piece::new(color, pt)) {
+                            return true;
+                        }
+                    }
+                }
+            },
+            }
+        };
+        false
+    }
+    pub fn can_eat_king(&self) -> bool {
+        let color = self.turn;
+        for pos in Position::all() {
+            let square = self.get_square(pos);
+            if square.contains(Piece::new(!color, King)) {
+                return self.can_be_eaten_by(pos, color)
+            }
+        };
+        unreachable!("There is no king on the board")
+    }
 }
 
 impl fmt::Display for Game {
@@ -545,6 +607,15 @@ impl fmt::Display for Game {
         try!(write!(f, "    a b c d e f g h  \n"));
         Ok(())
     }
+}
+
+#[bench]
+fn bench_is_valid(b: &mut test::Bencher) {
+    let mut game: Game = Game::new();
+    b.iter(|| {
+        let mut game: Game = Game::new();
+        game.make_move(&Move::safe_from_string("e2e4"))
+    });
 }
 
 #[test]
@@ -672,7 +743,7 @@ fn test_game_1() {
 }
 
 use self::Color::{White, Black};
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
 pub enum Color {
     White,
     Black,
@@ -740,7 +811,7 @@ impl PieceType {
     }
     pub fn get_value(&self) -> i32 {
         match *self {
-            King   => 128,
+            King   => 0,
             Queen  => 9,
             Rook   => 5,
             Bishop => 3,
@@ -1051,16 +1122,38 @@ fn move_from_string() {
 
 #[derive(Debug, Clone, Copy)]
 pub struct ValuedMove {
-    pub value: Option<i32>,
     pub mov: Move,
+    pub value: BoardValue,
+}
+
+use self::BoardValue::{WonWhite, Value, WonBlack, Invalid};
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub enum BoardValue {
+    WonBlack,
+    Value(i32),
+    WonWhite,
+    Invalid,
+}
+
+impl BoardValue {
+    pub fn is_valid(&self) -> bool{
+        match *self {
+            Invalid => false,
+            _ => true,
+        }
+    }
+}
+
+#[test]
+fn test_cmp() {
+    assert!(WonWhite > Value(200));
+    assert!(WonWhite > WonBlack);
+    assert!(WonBlack < Value(-100));
 }
 
 impl ValuedMove {
-    pub fn is_valued(&self) -> bool {
-        self.value.is_some()
-    }
     pub fn from_move(mov: Move) -> ValuedMove {
-        ValuedMove { mov: mov, value: None }
+        ValuedMove { mov: mov, value: Invalid }
     }
     pub fn new(from: Position, to: Position, movetype: MoveType) -> ValuedMove {
         ValuedMove {
@@ -1069,18 +1162,34 @@ impl ValuedMove {
                 to:   to,
                 tipo: movetype,
             },
-            value: None
+            value: Invalid
         }
     }
-    pub fn empty() -> ValuedMove {
+    pub fn invalid() -> ValuedMove {
         ValuedMove {
             mov: Move {
                 from: Position::safe_from_chars('a','1'),
                 to:   Position::safe_from_chars('a','2'),
                 tipo: MoveType::Normal,
             },
-            value: None
+            value: Invalid
         }
+    }
+    pub fn from_value(value: BoardValue) -> ValuedMove {
+        ValuedMove {
+            mov: Move {
+                from: Position::safe_from_chars('a','1'),
+                to:   Position::safe_from_chars('a','2'),
+                tipo: MoveType::Normal,
+            },
+            value: value
+        }
+    }
+}
+
+impl fmt::Display for ValuedMove {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,"{} ({:?})", self.mov, self.value)
     }
 }
 
@@ -1091,12 +1200,7 @@ impl Ord for ValuedMove {
 }
 impl PartialOrd for ValuedMove {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match (self.value, other.value) {
-            (None, None) => None,
-            (None, Some(_)) => Some(Ordering::Less),
-            (Some(_), None) => Some(Ordering::Greater),
-            (Some(me), Some(you)) => Some(me.cmp(&you)),
-        }
+        self.value.partial_cmp(&other.value)
     }
 }
 impl PartialEq for ValuedMove {
@@ -1108,19 +1212,19 @@ impl Eq for ValuedMove { }
 
 #[test]
 fn test_valuedmove_partial_ord() {
-    let mut big = ValuedMove::empty();
-    let mut small = ValuedMove::empty();
-    assert_eq!(big, small);
-    big.value = Some(10);
-    assert!(big > small);
-    assert!(small < big);
-    small.value = Some(1);
-    assert!(big > small);
-    assert!(small < big);
+    let mut first = ValuedMove::invalid();
+    let mut second = ValuedMove::invalid();
+    assert_eq!(first, second);
+    first.value = WonWhite;
+    second.value = Value(10);
+    assert!(first > second);
+    first.value = Value(1);
+    second.value = WonBlack;
+    assert!(first > second);
 }
 
-pub type X = i32;
-pub type Y = i64;
+pub type X = i8;
+pub type Y = i8;
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Position {
     pub x: X,

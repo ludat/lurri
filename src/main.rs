@@ -3,7 +3,7 @@ use std::io;
 #[macro_use]
 mod game;
 mod lurri;
-use game::{Game, Move};
+use game::*;
 use game::Color::{White, Black};
 
 fn main() {
@@ -11,16 +11,19 @@ fn main() {
     println!("Write your moves like e2e4. You are white by default");
     let mut game: Game = Game::new();
     let mut engine_color = Black;
+    let mut engine_depth = 3;
     loop {
         game.show();
         if game.turn == engine_color {
-            let engine_move: Move = lurri::get_move(&game);
+            let engine_move: Move = lurri::get_move(&game, engine_depth);
             match game.make_move(&engine_move) {
                 Err(ref e) => {
-                    println!("Lurri couldn't make move, {}", e)
+                    println!("Lurri couldn't make move {}, {}", engine_move, e);
+                    continue;
                 },
                 Ok(_) => {
-                    println!("Lurri has moved")
+                    println!("Lurri has moved");
+                    continue;
                 },
             }
         };
@@ -39,7 +42,7 @@ fn main() {
             "black" => engine_color = Black,
             "xboard" => return xboard(),
             "l" => {
-                let engine_move: Move = lurri::get_move(&game);
+                let engine_move: Move = lurri::get_move(&game, engine_depth);
                 match game.make_move(&engine_move) {
                     Err(ref e) => {
                         println!("Lurri couldn't make move, {}", e)
@@ -67,10 +70,11 @@ fn main() {
 fn xboard() {
     let mut game: Game = Game::new();
     let mut engine_color = Black;
+    let mut engine_depth = 3;
     loop {
         if game.turn == engine_color {
             println!("# lurri should think");
-            let engine_move: Move = lurri::get_move(&game);
+            let engine_move: Move = lurri::get_move(&game, engine_depth);
             match game.make_move(&engine_move) {
                 Ok(_) => {
                     println!("move {}", engine_move);
