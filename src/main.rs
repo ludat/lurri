@@ -1,4 +1,3 @@
-#![feature(test)]
 use std::io;
 #[macro_use]
 mod game;
@@ -11,7 +10,7 @@ fn main() {
     println!("Write your moves like e2e4. You are white by default");
     let mut game: Game = Game::new();
     let mut engine_color = Black;
-    let mut engine_depth = 3;
+    let engine_depth = 3;
     loop {
         game.show();
         if game.turn == engine_color {
@@ -70,7 +69,7 @@ fn main() {
 fn xboard() {
     let mut game: Game = Game::new();
     let mut engine_color = Black;
-    let mut engine_depth = 3;
+    let engine_depth = 3;
     loop {
         if game.turn == engine_color {
             println!("# lurri should think");
