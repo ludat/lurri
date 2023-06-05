@@ -1423,9 +1423,9 @@ impl BoardValue {
 
 #[test]
 fn test_cmp() {
-    assert!(WonWhite > Value(200));
-    assert!(WonWhite > WonBlack);
-    assert!(WonBlack < Value(-100));
+    assert!(BoardValue::WonWhite > BoardValue::Value(200));
+    assert!(BoardValue::WonWhite > BoardValue::WonBlack);
+    assert!(BoardValue::WonBlack < BoardValue::Value(-100));
 }
 
 impl ValuedMove {
@@ -1495,11 +1495,11 @@ fn test_valuedmove_partial_ord() {
     let mut first = ValuedMove::invalid();
     let mut second = ValuedMove::invalid();
     assert_eq!(first, second);
-    first.value = WonWhite;
-    second.value = Value(10);
+    first.value = BoardValue::WonWhite;
+    second.value = BoardValue::Value(10);
     assert!(first > second);
-    first.value = Value(1);
-    second.value = WonBlack;
+    first.value = BoardValue::Value(1);
+    second.value = BoardValue::WonBlack;
     assert!(first > second);
 }
 
